@@ -14,12 +14,11 @@ function ApplyForm({ jobId }) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        jobId: jobId,
+        ad_id: jobId,
         name: name,
         email: email,
         phone: phone,
         message: message,
-        date: new Date().toISOString(),
       }),
     }).then(() => setSent(true));
   }

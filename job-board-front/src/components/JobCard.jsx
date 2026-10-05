@@ -17,8 +17,8 @@ function JobCard({ job }) {
   return (
     <div>
       <h2>{job.title}</h2>
-      <p>{job.company} · {job.location}</p>
-      <p>{job.shortDescription}</p>
+      <p>{job.company_name} · {job.location}</p>
+      <p>{job.short_description}</p>
 
       <button onClick={handleLearnMore}>
         {isOpen ? "Show less" : "Learn more"}
@@ -27,10 +27,11 @@ function JobCard({ job }) {
 
       {isOpen && details && (
         <div>
-          <p>{details.description}</p>
-          <p><strong>Contract:</strong> {details.contract}</p>
+          <p>{details.full_description}</p>
+          <p><strong>Contract:</strong> {details.contract_type}</p>
           <p><strong>Salary:</strong> {details.salary}</p>
-          <p><strong>Working time:</strong> {details.workingTime}</p>
+          <p><strong>Working time:</strong> {details.working_time}</p>
+          <p><strong>Remote:</strong> {details.remote}</p>
         </div>
       )}
 

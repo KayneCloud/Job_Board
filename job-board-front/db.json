@@ -3,37 +3,42 @@
     {
       "id": "1",
       "title": "POS Systems Technician",
-      "company": "Le Grand Bistrot",
+      "short_description": "Install and maintain point-of-sale systems across our restaurants.",
+      "full_description": "You will install, configure and troubleshoot POS terminals, printers and payment devices in our 6 restaurants. You will also train staff on new features.",
+      "company_id": 1,
+      "company_name": "Le Grand Bistrot",
       "location": "Marseille",
-      "contract": "Full-time",
+      "contract_type": "Full-time",
+      "working_time": "35h / week",
       "salary": "28 000 € / year",
-      "workingTime": "35h / week",
-      "shortDescription": "Install and maintain point-of-sale systems across our restaurants.",
-      "description": "You will install, configure and troubleshoot POS terminals, printers and payment devices in our 6 restaurants. You will also train staff on new features."
+      "remote": "no"
     },
     {
       "id": "2",
       "title": "Junior Web Developer",
-      "company": "Food & Co",
+      "short_description": "Help build our online ordering platform.",
+      "full_description": "Join a small team building a click-and-collect platform used by 40 restaurants. You will work on the React front end and help test new features.",
+      "company_id": 2,
+      "company_name": "Food & Co",
       "location": "Lyon",
-      "contract": "Internship",
+      "contract_type": "Internship",
+      "working_time": "35h / week",
       "salary": "1 000 € / month",
-      "workingTime": "35h / week",
-      "shortDescription": "Help build our online ordering platform.",
-      "description": "Join a small team building a click-and-collect platform used by 40 restaurants. You will work on the React front end and help test new features."
+      "remote": "partial"
     },
     {
       "id": "3",
       "title": "IT Support Assistant",
-      "company": "Le Grand Bistrot",
+      "short_description": "Be the first point of contact for IT issues in our kitchens and dining rooms.",
+      "full_description": "You will handle Wi-Fi problems, tablets, kitchen display screens and reservation software. Evening availability is a plus.",
+      "company_id": 1,
+      "company_name": "Le Grand Bistrot",
       "location": "Aix-en-Provence",
-      "contract": "Part-time",
+      "contract_type": "Part-time",
+      "working_time": "20h / week",
       "salary": "13 € / hour",
-      "workingTime": "20h / week",
-      "shortDescription": "Be the first point of contact for IT issues in our kitchens and dining rooms.",
-      "description": "You will handle Wi-Fi problems, tablets, kitchen display screens and reservation software. Evening availability is a plus."
+      "remote": "no"
     }
   ],
-  "applications": [
-  ]
+  "applications": []
 }
