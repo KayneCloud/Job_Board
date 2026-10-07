@@ -28,10 +28,7 @@ def health():
     conn.close()
     return jsonify({"status": "ok", "tables": tables}), 200
 
-if __name__ == "__main__":
-    app.run(debug=True);
-
-@app.route("api/companies", methods=["GET"])
+@app.route("/api/companies", methods=["GET"])
 def get_companies():
     conn = get_db()
     with conn.cursor() as cursor:
@@ -51,3 +48,28 @@ def get_company(company_id):
     if company is None:
         return jsonify({"error": "Company not found"}), 404
     return jsonify(company), 200
+
+@app.route("/api/companies", methods=["POST"])
+def create_company():
+    data = request.get_json()
+
+    if not data or not data.get("name"):
+        return jsonify({"error": "name is required"}), 400
+
+    conn = get_db()
+    with conn.cursor() as cursor:
+        cursor.execute(
+                """INSERT INTO companies (name, sector, city, website, description)
+                VALUES (%s, %s, %s, %s, %s)""",
+                (data["name"], data.get("sector"), data.get("city"), data.get("website"), data.get("description"),
+            ),
+        )
+        conn.commit()
+        new_id = cursor.lastrowid
+    conn.close()
+
+    return jsonify({"id": new_id, "message": "Company created"}), 201   
+
+
+if __name__ == "__main__":
+    app.run(debug=True);
