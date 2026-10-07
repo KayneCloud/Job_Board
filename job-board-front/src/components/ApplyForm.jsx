@@ -20,7 +20,9 @@ function ApplyForm({ jobId }) {
         phone: phone,
         message: message,
       }),
-    }).then(() => setSent(true));
+    }).then((res) => {
+      if (res.ok) setSent(true);
+    });
   }
 
   if (sent) {

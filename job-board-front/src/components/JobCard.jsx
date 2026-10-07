@@ -2,12 +2,14 @@ import { useState } from "react";
 import ApplyForm from "./ApplyForm";
 
 function JobCard({ job }) {
-  const [isOpen, setIsOpen] = useState(false);
   const [details, setDetails] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
   function handleLearnMore() {
-    setIsOpen(!isOpen);
+    if (details) {
+      setDetails(null);
+      return;
+    }
 
     fetch(`http://localhost:3000/jobs/${job.id}`)
       .then((res) => res.json())
@@ -21,11 +23,11 @@ function JobCard({ job }) {
       <p>{job.short_description}</p>
 
       <button onClick={handleLearnMore}>
-        {isOpen ? "Show less" : "Learn more"}
+        {details ? "Show less" : "Learn more"}
       </button>
       <button onClick={() => setShowForm(!showForm)}>Apply</button>
 
-      {isOpen && details && (
+      {details && (
         <div>
           <p>{details.full_description}</p>
           <p><strong>Contract:</strong> {details.contract_type}</p>
