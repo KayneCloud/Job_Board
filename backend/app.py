@@ -1,6 +1,6 @@
 import os
 import pymysql
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from dotenv import load_dotenv
 
@@ -29,4 +29,25 @@ def health():
     return jsonify({"status": "ok", "tables": tables}), 200
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True);
+
+@app.route("api/companies", methods=["GET"])
+def get_companies():
+    conn = get_db()
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT * FROM companies")
+        companies = cursor.fetchall()
+    conn.close()
+    return jsonify(companies), 200
+
+@app.route("/api/companies/<int:company_id>", methods = ["GET"])
+def get_company(company_id):
+    conn = get_db()
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT * FROM companies WHERE id=%s", (company_id,))
+        company = cursor.fetchone()
+    conn.close()
+
+    if company is None:
+        return jsonify({"error": "Company not found"}), 404
+    return jsonify(company), 200
