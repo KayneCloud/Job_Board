@@ -1,0 +1,484 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
+
+:root {
+  --sauce: #B4301A;
+  --sauce-dark: #8E2412;
+  --cream: #F6EBC8;
+  --plate: #F4EEE2;
+  --tile: #BCD5E7;
+  --tile-line: #A4C2D8;
+  --ink: #2B120C;
+  --muted: #6B4A3E;
+}
+
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  color: var(--ink);
+  background-color: var(--tile);
+  background-image:
+    linear-gradient(var(--tile-line) 2px, transparent 2px),
+    linear-gradient(90deg, var(--tile-line) 2px, transparent 2px);
+  background-size: 110px 110px;
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+.header {
+  background-color: var(--sauce);
+  color: var(--cream);
+}
+
+.header-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: none;
+  border: 0;
+  color: var(--cream);
+  cursor: pointer;
+  padding: 0;
+}
+
+.logo-tomato {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1;
+}
+
+.logo-name {
+  font-weight: 800;
+  font-size: 24px;
+}
+
+.logo-tagline {
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  margin-top: 4px;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.nav-link {
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background: none;
+  color: var(--cream);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.nav-link.active {
+  background: var(--cream);
+  color: var(--sauce-dark);
+}
+
+.nav-link.outline {
+  border-color: var(--cream);
+}
+
+.hero {
+  max-width: 1320px;
+  margin: 40px auto 24px;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+}
+
+.hero-text {
+  background-color: var(--sauce);
+  background-image:
+    radial-gradient(ellipse 55% 45% at 20% 25%, rgba(255, 170, 120, 0.25), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 75%, rgba(70, 10, 0, 0.3), transparent 70%),
+    repeating-linear-gradient(155deg, rgba(255, 220, 190, 0.07) 0 3px, transparent 3px 26px);
+  color: var(--cream);
+  padding: 48px 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 22px;
+}
+
+.hero-kicker {
+  margin: 0;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.32em;
+}
+
+.hero-title {
+  margin: 0;
+  font-size: 58px;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.hero-subtitle {
+  margin: 0;
+  font-size: 17px;
+  max-width: 460px;
+}
+
+.search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  background: var(--cream);
+  border-radius: 999px;
+  padding: 6px;
+  max-width: 600px;
+}
+
+.search-input {
+  flex: 1 1 160px;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.search-where {
+  border-left: 1.5px solid #E2CFA0;
+}
+
+.search-button {
+  min-height: 48px;
+  padding: 0 26px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--cream);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.hero-photo {
+  position: relative;
+}
+
+.hero-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  object-position: center 40%;
+}
+
+@media (max-width: 800px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+  .hero-title {
+    font-size: 40px;
+  }
+}
+
+.filters-wrap {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.filters {
+  background: var(--cream);
+  border-radius: 999px;
+  padding: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1.5px solid #E2CFA0;
+  background: transparent;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.filter.active {
+  background: var(--sauce);
+  border-color: var(--sauce);
+  color: var(--cream);
+}
+
+.filter-clear {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  background: transparent;
+  color: var(--sauce-dark);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.jobs-layout {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px 24px 64px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.job-list {
+  flex: 1 1 380px;
+  max-width: 470px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.job-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--ink);
+  color: var(--cream);
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 13px;
+}
+
+.job-list-header h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.job-detail-placeholder {
+  flex: 999 1 560px;
+  min-height: 400px;
+  background: var(--plate);
+  border-radius: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.job-card {
+  background: var(--plate);
+  border: 2px solid transparent;
+  border-radius: 22px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 6px 0 rgba(43, 18, 12, 0.08);
+}
+
+.job-card.open {
+  border-color: var(--sauce);
+  box-shadow: 0 6px 0 rgba(180, 48, 26, 0.25);
+}
+
+.job-card-top {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.company-avatar {
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--sauce);
+  color: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.job-card-heading {
+  flex: 1;
+  min-width: 0;
+}
+
+.job-company {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.job-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.job-meta {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.save-button {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid #E2CFA0;
+  background: transparent;
+  color: var(--sauce-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.job-short {
+  margin: 0;
+  font-size: 14px;
+  color: #4A2E25;
+}
+
+.job-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tag-salary {
+  background: var(--tile);
+  color: #1E3A50;
+}
+
+.tag-easy {
+  background: var(--cream);
+  color: var(--sauce-dark);
+}
+
+.job-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.btn-outline,
+.btn-primary {
+  min-height: 40px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.btn-outline {
+  border: 2px solid var(--sauce);
+  background: transparent;
+  color: var(--sauce);
+}
+
+.btn-primary {
+  border: 2px solid var(--sauce);
+  background: var(--sauce);
+  color: var(--cream);
+}
+
+.job-details {
+  margin-top: 6px;
+  padding-top: 16px;
+  border-top: 1.5px dashed #E2CFA0;
+}
+
+.job-full {
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: #4A2E25;
+}
+
+.info-grid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.info-tile {
+  background: var(--tile);
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+.info-tile dt {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #1E3A50;
+}
+
+.info-tile dd {
+  margin: 0;
+  font-weight: 700;
+}

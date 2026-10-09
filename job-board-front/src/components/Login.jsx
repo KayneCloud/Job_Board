@@ -43,3 +43,5 @@ function Login({ onLogin }) {
 }
 
 export default Login;
+
+// first_name, last_name, email, phone, password_hash, role (admin or user, employer)

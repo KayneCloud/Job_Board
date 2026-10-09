@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import JobCard from "./components/JobCard";
 import Login from "./components/Login";
+import Header from "./components/Header";
+import Hero from "./components/Hero";
+import Filters from "./components/Filters";
 
 function App() {
   const [jobs, setJobs] = useState([]);
@@ -25,14 +28,7 @@ function App() {
 
   return (
     <div>
-      <nav>
-        <button onClick={() => setPage("jobs")}>Jobs</button>
-        {user ? (
-          <button onClick={handleLogout}>Log out</button>
-        ) : (
-          <button onClick={() => setPage("login")}>Sign in</button>
-        )}
-      </nav>
+      <Header page={page} setPage={setPage} user={user} onLogout={handleLogout} />
 
       {page === "login" && <Login onLogin={handleLogin} />}
 
@@ -40,10 +36,25 @@ function App() {
 
       {page === "jobs" && (
         <div>
-          <h1>Job Board</h1>
-          {jobs.map((job) => (
-            <JobCard key={job.id} job={job} />
-          ))}
+          <Hero />
+          <Filters />
+
+          <div className="jobs-layout">
+            <section className="job-list">
+              <div className="job-list-header">
+                <h2>{jobs.length} JOBS</h2>
+                <span>Sort: <strong>Most recent</strong></span>
+              </div>
+
+              {jobs.map((job) => (
+                <JobCard key={job.id} job={job} />
+              ))}
+            </section>
+
+            <aside className="job-detail-placeholder">
+              Select a job to see the details
+            </aside>
+          </div>
         </div>
       )}
     </div>
