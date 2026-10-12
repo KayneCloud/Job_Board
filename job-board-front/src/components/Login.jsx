@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function Login({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -8,17 +10,17 @@ function Login({ onLogin }) {
   function handleSubmit(event) {
     event.preventDefault();
 
-    fetch("http://localhost:3000/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email, password: password }),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error();
-        return res.json();
+    fetch(API_URL + "/users?email=" + encodeURIComponent(email))
+      .then((res) => res.json())
+      .then((users) => {
+        const user = users[0];
+        if (user && user.password === password) {
+          onLogin(user);
+        } else {
+          setError("Wrong email or password");
+        }
       })
-      .then((user) => onLogin(user))
-      .catch(() => setError("Wrong email or password"));
+      .catch(() => setError("Server not available"));
   }
 
   return (
@@ -43,5 +45,3 @@ function Login({ onLogin }) {
 }
 
 export default Login;
-
-// first_name, last_name, email, phone, password_hash, role (admin or user, employer)

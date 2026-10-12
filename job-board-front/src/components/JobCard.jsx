@@ -1,6 +1,8 @@
 import { useState } from "react";
 import ApplyForm from "./ApplyForm";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const remoteLabels = {
   no: "On site",
   partial: "Hybrid",
@@ -10,14 +12,13 @@ const remoteLabels = {
 function getInitials(name) {
   return name
     .split(" ")
-    .filter((word) => /[A-Za-z]/.test(word[0]))
     .map((word) => word[0])
     .join("")
     .slice(0, 2)
     .toUpperCase();
 }
 
-function JobCard({ job }) {
+function JobCard({ job, user }) {
   const [details, setDetails] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
@@ -27,7 +28,7 @@ function JobCard({ job }) {
       return;
     }
 
-    fetch(`http://localhost:3000/jobs/${job.id}`)
+    fetch(API_URL + "/jobs/" + job.id)
       .then((res) => res.json())
       .then((data) => setDetails(data));
   }
@@ -44,12 +45,6 @@ function JobCard({ job }) {
             {job.location} · {remoteLabels[job.remote]} · {job.contract_type}
           </p>
         </div>
-
-        <button className="save-button" aria-label="Save this job">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
-            <path d="M6 3h12v18l-6-4-6 4z" />
-          </svg>
-        </button>
       </div>
 
       <p className="job-short">{job.short_description}</p>
@@ -92,7 +87,7 @@ function JobCard({ job }) {
         </div>
       )}
 
-      {showForm && <ApplyForm jobId={job.id} />}
+      {showForm && <ApplyForm jobId={job.id} user={user} />}
     </article>
   );
 }

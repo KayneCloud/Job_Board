@@ -23,7 +23,8 @@ body {
 }
 
 button,
-input {
+input,
+textarea {
   font-family: inherit;
 }
 
@@ -64,23 +65,9 @@ input {
   justify-content: center;
 }
 
-.logo-text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  line-height: 1;
-}
-
 .logo-name {
   font-weight: 800;
   font-size: 24px;
-}
-
-.logo-tagline {
-  font-weight: 500;
-  font-size: 10px;
-  letter-spacing: 0.32em;
-  margin-top: 4px;
 }
 
 .nav {
@@ -190,10 +177,6 @@ input {
   cursor: pointer;
 }
 
-.hero-photo {
-  position: relative;
-}
-
 .hero-photo img {
   display: block;
   width: 100%;
@@ -229,9 +212,6 @@ input {
 }
 
 .filter {
-  display: flex;
-  align-items: center;
-  gap: 6px;
   min-height: 40px;
   padding: 0 16px;
   border-radius: 999px;
@@ -241,6 +221,7 @@ input {
   font-weight: 600;
   font-size: 13px;
   letter-spacing: 0.04em;
+  text-transform: uppercase;
   cursor: pointer;
 }
 
@@ -259,55 +240,36 @@ input {
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.04em;
+  text-transform: uppercase;
   cursor: pointer;
 }
 
-.jobs-layout {
+.job-list {
   max-width: 1320px;
   margin: 0 auto;
   padding: 24px 24px 64px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
-  align-items: flex-start;
-}
-
-.job-list {
-  flex: 1 1 380px;
-  max-width: 470px;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
   gap: 14px;
+  align-items: start;
 }
 
-.job-list-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.job-list h2 {
+  grid-column: 1 / -1;
+  margin: 0;
   background: var(--ink);
   color: var(--cream);
   border-radius: 999px;
   padding: 8px 18px;
-  font-size: 13px;
-}
-
-.job-list-header h2 {
-  margin: 0;
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.12em;
 }
 
-.job-detail-placeholder {
-  flex: 999 1 560px;
-  min-height: 400px;
-  background: var(--plate);
-  border-radius: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--muted);
-  font-weight: 500;
+@media (max-width: 500px) {
+  .job-list {
+    grid-template-columns: 1fr;
+  }
 }
 
 .job-card {
@@ -373,20 +335,6 @@ input {
   font-size: 13px;
 }
 
-.save-button {
-  flex: 0 0 auto;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1.5px solid #E2CFA0;
-  background: transparent;
-  color: var(--sauce-dark);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
 .job-short {
   margin: 0;
   font-size: 14px;
@@ -409,11 +357,6 @@ input {
 .tag-salary {
   background: var(--tile);
   color: #1E3A50;
-}
-
-.tag-easy {
-  background: var(--cream);
-  color: var(--sauce-dark);
 }
 
 .job-card-actions {
@@ -481,4 +424,21 @@ input {
 .info-tile dd {
   margin: 0;
   font-weight: 700;
+}
+
+.footer {
+  background-color: var(--ink);
+  color: var(--cream);
+  text-align: center;
+  padding: 24px;
+  font-size: 13px;
+}
+
+.footer p {
+  margin: 4px 0;
+}
+
+.footer-name {
+  font-weight: 800;
+  font-size: 18px;
 }

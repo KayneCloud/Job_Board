@@ -5,7 +5,7 @@
       "title": "POS Systems Technician",
       "short_description": "Install and maintain point-of-sale systems across our restaurants.",
       "full_description": "You will install, configure and troubleshoot POS terminals, printers and payment devices in our 6 restaurants. You will also train staff on new features.",
-      "company_id": 1,
+      "company_id": "1",
       "company_name": "Le Grand Bistrot",
       "location": "Marseille",
       "contract_type": "Full-time",
@@ -18,7 +18,7 @@
       "title": "Junior Web Developer",
       "short_description": "Help build our online ordering platform.",
       "full_description": "Join a small team building a click-and-collect platform used by 40 restaurants. You will work on the React front end and help test new features.",
-      "company_id": 2,
+      "company_id": "2",
       "company_name": "Food & Co",
       "location": "Lyon",
       "contract_type": "Internship",
@@ -31,13 +31,37 @@
       "title": "IT Support Assistant",
       "short_description": "Be the first point of contact for IT issues in our kitchens and dining rooms.",
       "full_description": "You will handle Wi-Fi problems, tablets, kitchen display screens and reservation software. Evening availability is a plus.",
-      "company_id": 1,
+      "company_id": "1",
       "company_name": "Le Grand Bistrot",
       "location": "Aix-en-Provence",
       "contract_type": "Part-time",
       "working_time": "20h / week",
       "salary": "13 € / hour",
       "remote": "no"
+    }
+  ],
+  "companies": [
+    { "id": "1", "name": "Le Grand Bistrot", "city": "Marseille" },
+    { "id": "2", "name": "Food & Co", "city": "Lyon" }
+  ],
+  "users": [
+    {
+      "id": "1",
+      "first_name": "Admin",
+      "last_name": "Chefs",
+      "email": "admin@chefs.dev",
+      "phone": "",
+      "password": "admin123",
+      "role": "admin"
+    },
+    {
+      "id": "2",
+      "first_name": "Jane",
+      "last_name": "Doe",
+      "email": "jane@chefs.dev",
+      "phone": "0600000000",
+      "password": "jane123",
+      "role": "user"
     }
   ],
   "applications": []

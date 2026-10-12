@@ -1,27 +1,33 @@
 import { useState } from "react";
 
-function ApplyForm({ jobId }) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+const API_URL = import.meta.env.VITE_API_URL;
+
+function ApplyForm({ jobId, user }) {
+  const [name, setName] = useState(user ? user.first_name + " " + user.last_name : "");
+  const [email, setEmail] = useState(user ? user.email : "");
+  const [phone, setPhone] = useState(user ? user.phone : "");
   const [message, setMessage] = useState("");
   const [sent, setSent] = useState(false);
 
   function handleSubmit(event) {
     event.preventDefault();
 
-    fetch("http://localhost:3000/applications", {
+    fetch(API_URL + "/applications", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        ad_id: jobId,
+        job_id: jobId,
+        user_id: user ? user.id : null,
         name: name,
         email: email,
         phone: phone,
         message: message,
+        date: new Date().toISOString(),
       }),
     }).then((res) => {
-      if (res.ok) setSent(true);
+      if (res.ok) {
+        setSent(true);
+      }
     });
   }
 

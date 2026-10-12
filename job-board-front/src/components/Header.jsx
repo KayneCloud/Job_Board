@@ -11,10 +11,7 @@ function Header({ page, setPage, user, onLogout }) {
               <path d="M18 9 V4" stroke="#3F7A35" strokeWidth="2.2" strokeLinecap="round" />
             </svg>
           </span>
-          <span className="logo-text">
-            <span className="logo-name">CHEFS.DEV</span>
-            <span className="logo-tagline">THE TECH KITCHEN</span>
-          </span>
+          <span className="logo-name">CHEFS.DEV</span>
         </button>
 
         <nav className="nav">
@@ -25,22 +22,37 @@ function Header({ page, setPage, user, onLogout }) {
             JOBS
           </button>
 
-          {user ? (
+          {user && user.role === "admin" && (
+            <button
+              className={page === "admin" ? "nav-link active" : "nav-link"}
+              onClick={() => setPage("admin")}
+            >
+              ADMIN
+            </button>
+          )}
+
+          {user && (
             <button className="nav-link outline" onClick={onLogout}>
               LOG OUT
             </button>
-          ) : (
-            <>
-              <button
-                className={page === "login" ? "nav-link active" : "nav-link"}
-                onClick={() => setPage("login")}
-              >
-                SIGN IN
-              </button>
-              <button className="nav-link outline" onClick={() => setPage("register")}>
-                CREATE ACCOUNT
-              </button>
-            </>
+          )}
+
+          {!user && (
+            <button
+              className={page === "login" ? "nav-link active" : "nav-link"}
+              onClick={() => setPage("login")}
+            >
+              SIGN IN
+            </button>
+          )}
+
+          {!user && (
+            <button
+              className={page === "register" ? "nav-link active" : "nav-link outline"}
+              onClick={() => setPage("register")}
+            >
+              CREATE ACCOUNT
+            </button>
           )}
         </nav>
       </div>

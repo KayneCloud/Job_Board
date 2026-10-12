@@ -1,24 +1,51 @@
 import { useEffect, useState } from "react";
 import JobCard from "./components/JobCard";
 import Login from "./components/Login";
+import Register from "./components/Register";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import Filters from "./components/Filters";
+import Footer from "./components/Footer";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 function App() {
   const [jobs, setJobs] = useState([]);
   const [user, setUser] = useState(null);
   const [page, setPage] = useState("jobs");
+  const [search, setSearch] = useState("");
+  const [location, setLocation] = useState("");
+  const [type, setType] = useState("All");
 
   useEffect(() => {
-    fetch("http://localhost:3000/jobs")
+    fetch(API_URL + "/jobs")
       .then((res) => res.json())
       .then((data) => setJobs(data));
   }, []);
 
+  const types = ["All", ...new Set(jobs.map((job) => job.contract_type))];
+
+  const filteredJobs = jobs.filter((job) => {
+    const where = job.location + " " + (job.remote === "yes" ? "remote" : "");
+    const matchSearch = job.title.toLowerCase().includes(search.toLowerCase());
+    const matchLocation = where.toLowerCase().includes(location.toLowerCase());
+    const matchType = type === "All" || job.contract_type === type;
+    return matchSearch && matchLocation && matchType;
+  });
+
+  function clearFilters() {
+    setSearch("");
+    setLocation("");
+    setType("All");
+  }
+
   function handleLogin(loggedUser) {
     setUser(loggedUser);
-    setPage(loggedUser.role === "admin" ? "admin" : "jobs");
+    if (loggedUser.role === "admin") {
+      setPage("admin");
+    } else {
+      setPage("jobs");
+    }
   }
 
   function handleLogout() {
@@ -32,31 +59,25 @@ function App() {
 
       {page === "login" && <Login onLogin={handleLogin} />}
 
-      {page === "admin" && user?.role === "admin" && <h1>Admin</h1>}
+      {page === "register" && <Register onRegister={handleLogin} />}
+
+      {page === "admin" && user && user.role === "admin" && <h1>Admin</h1>}
 
       {page === "jobs" && (
         <div>
-          <Hero />
-          <Filters />
+          <Hero search={search} setSearch={setSearch} location={location} setLocation={setLocation} />
+          <Filters types={types} type={type} setType={setType} onClear={clearFilters} />
 
-          <div className="jobs-layout">
-            <section className="job-list">
-              <div className="job-list-header">
-                <h2>{jobs.length} JOBS</h2>
-                <span>Sort: <strong>Most recent</strong></span>
-              </div>
-
-              {jobs.map((job) => (
-                <JobCard key={job.id} job={job} />
-              ))}
-            </section>
-
-            <aside className="job-detail-placeholder">
-              Select a job to see the details
-            </aside>
-          </div>
+          <section className="job-list" id="job-list">
+            <h2>{filteredJobs.length} JOBS</h2>
+            {filteredJobs.map((job) => (
+              <JobCard key={job.id} job={job} user={user} />
+            ))}
+          </section>
         </div>
       )}
+
+      <Footer />
     </div>
   );
 }
