@@ -1,5 +1,5 @@
 {
-  "jobs": [
+  "advertisements": [
     {
       "id": "1",
       "title": "POS Systems Technician",
@@ -44,7 +44,7 @@
     { "id": "1", "name": "Le Grand Bistrot", "city": "Marseille" },
     { "id": "2", "name": "Food & Co", "city": "Lyon" }
   ],
-  "users": [
+  "people": [
     {
       "id": "1",
       "first_name": "Admin",

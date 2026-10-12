@@ -16,13 +16,12 @@ function ApplyForm({ jobId, user }) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        job_id: jobId,
-        user_id: user ? user.id : null,
+        ad_id: jobId,
+        person_id: user ? user.id : null,
         name: name,
         email: email,
         phone: phone,
         message: message,
-        date: new Date().toISOString(),
       }),
     }).then((res) => {
       if (res.ok) {
@@ -32,11 +31,11 @@ function ApplyForm({ jobId, user }) {
   }
 
   if (sent) {
-    return <p>Your application has been sent!</p>;
+    return <p className="form-success">Your application has been sent!</p>;
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="apply-form" onSubmit={handleSubmit}>
       <label>
         Name
         <input value={name} onChange={(e) => setName(e.target.value)} required />
@@ -57,7 +56,7 @@ function ApplyForm({ jobId, user }) {
         <textarea value={message} onChange={(e) => setMessage(e.target.value)} required />
       </label>
 
-      <button type="submit">Send</button>
+      <button type="submit" className="btn-primary">SEND</button>
     </form>
   );
 }

@@ -18,7 +18,7 @@ function App() {
   const [type, setType] = useState("All");
 
   useEffect(() => {
-    fetch(API_URL + "/jobs")
+    fetch(API_URL + "/advertisements")
       .then((res) => res.json())
       .then((data) => setJobs(data));
   }, []);
@@ -26,7 +26,7 @@ function App() {
   const types = ["All", ...new Set(jobs.map((job) => job.contract_type))];
 
   const filteredJobs = jobs.filter((job) => {
-    const where = job.location + " " + (job.remote === "yes" ? "remote" : "");
+    const where = job.location + " " + (job.remote === "full" ? "remote" : "");
     const matchSearch = job.title.toLowerCase().includes(search.toLowerCase());
     const matchLocation = where.toLowerCase().includes(location.toLowerCase());
     const matchType = type === "All" || job.contract_type === type;

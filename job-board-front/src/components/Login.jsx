@@ -10,10 +10,10 @@ function Login({ onLogin }) {
   function handleSubmit(event) {
     event.preventDefault();
 
-    fetch(API_URL + "/users?email=" + encodeURIComponent(email))
+    fetch(API_URL + "/people?email=" + encodeURIComponent(email))
       .then((res) => res.json())
-      .then((users) => {
-        const user = users[0];
+      .then((people) => {
+        const user = people[0];
         if (user && user.password === password) {
           onLogin(user);
         } else {
@@ -24,7 +24,7 @@ function Login({ onLogin }) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="form-card" onSubmit={handleSubmit}>
       <h1>Sign in</h1>
 
       <label>
@@ -37,9 +37,9 @@ function Login({ onLogin }) {
         <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
       </label>
 
-      {error && <p>{error}</p>}
+      {error && <p className="form-error">{error}</p>}
 
-      <button type="submit">Sign in</button>
+      <button type="submit" className="btn-primary">SIGN IN</button>
     </form>
   );
 }

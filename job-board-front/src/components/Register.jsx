@@ -13,7 +13,7 @@ function Register({ onRegister }) {
   function handleSubmit(event) {
     event.preventDefault();
 
-    fetch(API_URL + "/users", {
+    fetch(API_URL + "/people", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -36,7 +36,7 @@ function Register({ onRegister }) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="form-card" onSubmit={handleSubmit}>
       <h1>Create an account</h1>
 
       <label>
@@ -64,9 +64,9 @@ function Register({ onRegister }) {
         <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
       </label>
 
-      {error && <p>{error}</p>}
+      {error && <p className="form-error">{error}</p>}
 
-      <button type="submit">Create account</button>
+      <button type="submit" className="btn-primary">CREATE ACCOUNT</button>
     </form>
   );
 }

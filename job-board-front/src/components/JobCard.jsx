@@ -6,7 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 const remoteLabels = {
   no: "On site",
   partial: "Hybrid",
-  yes: "Remote",
+  full: "Remote",
 };
 
 function getInitials(name) {
@@ -28,7 +28,7 @@ function JobCard({ job, user }) {
       return;
     }
 
-    fetch(API_URL + "/jobs/" + job.id)
+    fetch(API_URL + "/advertisements/" + job.id)
       .then((res) => res.json())
       .then((data) => setDetails(data));
   }
