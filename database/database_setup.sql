@@ -26,7 +26,7 @@ CREATE TABLE people (
     email VARCHAR(255) NOT NULL UNIQUE,
     phone VARCHAR(30),
     password_hash VARCHAR(255) NOT NULL,
-    role ENUM ('admin' , 'user') NOT NULL DEFAULT 'user',
+    role ENUM ('admin' , 'user', 'employer') NOT NULL DEFAULT 'user',
     company_id INT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE SET NULL
