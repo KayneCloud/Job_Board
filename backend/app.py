@@ -70,6 +70,46 @@ def create_company():
 
     return jsonify({"id": new_id, "message": "Company created"}), 201   
 
+@app.route("/api/companies/<int:company_id>", methods=["PUT"])
+def update_company(company_id):
+    data=request.get_json()
+
+    if not data or not data.get("name"):
+        return jsonify({"error": "name is required"}), 400
+
+    conn = get_db()
+    with conn.cursor() as cursor:
+        cursor.execute(
+            "UPDATE companies SET name=%s, sector=%s, city=%s, website=%s, description=%s WHERE id=%s", 
+            (
+                data["name"],
+                data.get("sector"),
+                data.get("city"),
+                data.get("website"),
+                data.get("description"),
+                company_id,
+            ),
+        )
+        conn.commit()
+        changed = cursor.rowcount
+    conn.close()
+
+    if changed == 0:
+        return jsonify({"error": "Company not found"}), 404
+    return jsonify({"message": "Company updated"}), 200
+
+@app.route("/api/companies/<int:company_id>", methods=["DELETE"])
+def delete_company(company_id):
+    conn = get_db()
+    with conn.cursor() as cursor:
+        cursor.execute("DELETE FROM companies WHERE id=%s", (company_id,))
+        conn.commit()
+        deleted = cursor.rowcount
+    conn.close()
+
+    if deleted == 0:
+        return jsonify ({"error": "Company not found"}), 404
+    return jsonify({"message": "Company deleted"}), 200
 
 if __name__ == "__main__":
-    app.run(debug=True);
+    app.run(debug=True)
