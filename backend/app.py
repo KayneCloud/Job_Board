@@ -3,15 +3,32 @@ import pymysql
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from dotenv import load_dotenv
-from werkzeug.security import generate_password_hash
+from functools import wraps
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
+from werkzeug.security import generate_password_hash, check_password_hash
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-# DATABASE CONNECTION ==================================
 
+# ===================== TABLE OF CONTENTS =====================
+# 1. Imports              -> libraries (Flask, PyMySQL, CORS, dotenv, itsdangerous, werkzeug)
+# 2. Setup                -> load .env, create the Flask app, enable CORS
+# 3. Database connection  -> get_db(): opens a connection to MySQL
+# 4. Auth helpers         -> create_token(), get_current_user(), @admin_required
+# 5. Health check         -> GET /api/health
+# 6. Companies            -> CRUD /api/companies
+# 7. Advertisements       -> CRUD /api/advertisements
+# 8. Applications         -> apply to an ad + CRUD /api/applications
+# 9. People & auth        -> CRUD /api/people + signup, login, me (/api/auth/...)
+# 10. Start server        -> app.run()
+#
+# Admin-only routes are marked with @admin_required
+# ==============================================================
+
+# 3. DATABASE CONNECTION ==================================
 def get_db():
     """Open a connection to MySQL."""
     return pymysql.connect(
@@ -22,7 +39,50 @@ def get_db():
         cursorclass=pymysql.cursors.DictCursor,
     )
 
-# HEALTH CHECK ==========================================
+# 4. AUTH HELPERS ==========================================
+serializer = URLSafeTimedSerializer(os.getenv("SECRET_KEY"))
+TOKEN_MAX_AGE = 60*60*24
+
+def create_token(person_id):
+    """Make a signed token that contains the person's id."""
+    return serializer.dumps({"id": person_id})
+
+def get_current_user():
+    """Read the token from the request. Return the person, or None if not logged in."""
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer "):
+        return None
+    token = auth[len("Bearer "):]
+
+    try:
+        data = serializer.loads(token, max_age=TOKEN_MAX_AGE)
+    except (BadSignature, SignatureExpired):
+        return None
+
+    conn = get_db()
+    with conn.cursor() as cursor:
+        cursor.execute(
+            """SELECT id, first_name, last_name, email, phone, role, company_id
+            FROM people WHERE id=%s""",
+            (data["id"],),
+        )
+        person = cursor.fetchone()
+    conn.close()
+    return person
+
+def admin_required(route_function):
+    """PUT @admin_required under @app.route to allow only admins"""
+    @wraps(route_function)
+    def wrapper(*args, **kwargs):
+        user = get_current_user()
+        if user is None:
+            return jsonify({"error": "You must be logged in"}), 401
+        if user["role"] != "admin":
+            return jsonify({"error": "Admins only"}), 403
+        return route_function(*args, **kwargs)
+    return wrapper
+
+# 5. HEALTH CHECK ==========================================
 # checks that Flask can reach MySQL (lists the tables)
 @app.route ("/api/health", methods=["GET"])
 def health():
@@ -33,7 +93,7 @@ def health():
     conn.close()
     return jsonify({"status": "ok", "tables": tables}), 200
 
-# COMPANY SECTION ========================================
+# 6. COMPANY SECTION ========================================
 # list all companies
 @app.route("/api/companies", methods=["GET"])
 def get_companies():
@@ -59,6 +119,7 @@ def get_company(company_id):
 
 # create a company (name required, returns 201 + new id)
 @app.route("/api/companies", methods=["POST"])
+@admin_required
 def create_company():
     data = request.get_json()
 
@@ -81,6 +142,7 @@ def create_company():
 
 # replace all the info of a company (404 if not found)
 @app.route("/api/companies/<int:company_id>", methods=["PUT"])
+@admin_required
 def update_company(company_id):
     data=request.get_json()
 
@@ -110,6 +172,7 @@ def update_company(company_id):
 
 # delete a company (its ads are deleted too)
 @app.route("/api/companies/<int:company_id>", methods=["DELETE"])
+@admin_required
 def delete_company(company_id):
     conn = get_db()
     with conn.cursor() as cursor:
@@ -122,9 +185,10 @@ def delete_company(company_id):
         return jsonify ({"error": "Company not found"}), 404
     return jsonify({"message": "Company deleted"}), 200
 
-# ADVERTISEMENT SECTION =======================================
+# 7. ADVERTISEMENT SECTION ==========================================
 # create a job ad (title, short_description, company_id required)
 @app.route("/api/advertisements", methods=["POST"])
+@admin_required
 def create_advertisement():
     data = request.get_json()
 
@@ -144,7 +208,7 @@ def create_advertisement():
                     data["short_description"],
                     data.get("full_description"),
                     data["company_id"],
-                    data.get("cotact_id"),
+                    data.get("contact_id"),
                     data.get("location"),
                     data.get("contract_type"),
                     data.get("working_time"),
@@ -199,6 +263,7 @@ def get_advertisement(ad_id):
 
 # replace all the info of an ad
 @app.route("/api/advertisements/<int:ad_id>", methods=["PUT"])
+@admin_required
 def update_advertisement(ad_id):
     data = request.get_json()
 
@@ -241,6 +306,7 @@ def update_advertisement(ad_id):
 
 # delete an ad (its applications are deleted too)
 @app.route("/api/advertisements/<int:ad_id>", methods=["DELETE"])
+@admin_required
 def delete_advertisement(ad_id):
     conn = get_db()
     with conn.cursor() as cursor:
@@ -250,10 +316,10 @@ def delete_advertisement(ad_id):
     conn.close()
 
     if deleted == 0:
-        return jsonify({"error": "Adverti   sement not found"}), 404
+        return jsonify({"error": "Advertisement not found"}), 404
     return jsonify({"message": "Advertisement deleted"}), 200
 
-# APPLICATION SECTION ===========================================
+# 8. APPLICATION SECTION ===========================================
 # apply to an ad
 @app.route("/api/advertisements/<int:ad_id>/applications", methods=["POST"])
 def create_application(ad_id):
@@ -293,6 +359,7 @@ def create_application(ad_id):
 
 # list all applications + job title (admin page)
 @app.route("/api/applications", methods=["GET"])
+@admin_required
 def get_applications():
     conn = get_db()
     with conn.cursor() as cursor:
@@ -308,6 +375,7 @@ def get_applications():
 
 # list the applications for one ad
 @app.route("/api/advertisements/<int:ad_id>/applications", methods=["GET"])
+@admin_required
 def get_applications_for_ad(ad_id):
     conn = get_db()
     with conn.cursor() as cursor:
@@ -328,6 +396,7 @@ def get_applications_for_ad(ad_id):
 
 # get one application + job title
 @app.route("/api/applications/<int:application_id>", methods=["GET"])
+@admin_required
 def get_application(application_id):
     conn = get_db()
     with conn.cursor() as cursor:
@@ -347,6 +416,7 @@ def get_application(application_id):
 
 # change only the status ("sent" or "read")
 @app.route("/api/applications/<int:application_id>", methods=["PATCH"])
+@admin_required
 def update_application_status(application_id):
     data = request.get_json()
 
@@ -369,6 +439,7 @@ def update_application_status(application_id):
 
 # delete an application
 @app.route("/api/applications/<int:application_id>", methods=["DELETE"])
+@admin_required
 def delete_application(application_id):
     conn = get_db()
     with conn.cursor() as cursor:
@@ -381,7 +452,7 @@ def delete_application(application_id):
         return jsonify({"error": "Application not found"}), 404
     return jsonify({"message": "Application deleted"}), 200
 
-# PEOPLE SECTION
+# 9. PEOPLE SECTION & AUTH ==================================================
 
 PEOPLE_COLUMNS = """p.id, p.first_name, p.last_name, p.email, p.phone,
                     p.role, p.company_id, p.created_at, c.name AS company_name"""
@@ -389,6 +460,7 @@ PEOPLE_COLUMNS = """p.id, p.first_name, p.last_name, p.email, p.phone,
 
 # list all people + company name, except the password_hash
 @app.route("/api/people", methods=["GET"])
+@admin_required
 def get_people():
     conn = get_db()
     with conn.cursor() as cursor:
@@ -405,6 +477,7 @@ def get_people():
 
 # get one person, except the password_hash
 @app.route("/api/people/<int:person_id>", methods=["GET"])
+@admin_required
 def get_person(person_id):
     conn = get_db()
     with conn.cursor() as cursor:
@@ -465,8 +538,43 @@ def signup():
 
     return jsonify({"id": new_id, "message": "Account created"}), 201
 
+# check email + password, return a token and the role
+@app.route("/api/auth/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    if not data or not data.get("email") or not data.get("password"):
+        return jsonify({"error": "email and password are required"}), 400
+
+    conn = get_db()
+    with conn.cursor() as cursor:
+        cursor.execute(
+            "SELECT id, first_name, role, password_hash FROM people WHERE email=%s",
+            (data["email"],),
+        )
+        person = cursor.fetchone()
+    conn.close()
+
+    if person is None or not check_password_hash(person["password_hash"], data["password"]):
+        return jsonify({"error": "Wrong email or password"}), 401
+
+    return jsonify({
+        "token": create_token(person["id"]),
+        "id": person["id"],
+        "first_name": person["first_name"],
+        "role": person["role"],
+    }), 200
+
+#return the logged-in person (needs a token)
+@app.route("/api/auth/me", methods=["GET"])
+def me():
+    user = get_current_user()
+    if user is None:
+        return jsonify({"error": "You must be logged in"}), 401
+    return jsonify(user), 200
+
 # update a person (not the password), email must stay unique
 @app.route("/api/people/<int:person_id>", methods=["PUT"])
+@admin_required
 def update_person(person_id):
     data = request.get_json()
 
@@ -516,6 +624,7 @@ def update_person(person_id):
 
 # delete a person + all their applications + all the ads they are contact for
 @app.route("/api/people/<int:person_id>", methods=["DELETE"])
+@admin_required
 def delete_person(person_id):
     conn = get_db()
     with conn.cursor() as cursor:
@@ -542,6 +651,8 @@ def delete_person(person_id):
         "deleted_ads": deleted_ads,
     }), 200
 
-# START SERVER ================================================
+
+
+# 10. START SERVER ================================================
 if __name__ == "__main__":
     app.run(debug=True)
