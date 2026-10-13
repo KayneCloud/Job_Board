@@ -22,7 +22,14 @@ const emptyCompany = {
   description: "",
 };
 
-function JobsSection() {
+function authHeaders(token) {
+  return {
+    "Content-Type": "application/json",
+    Authorization: "Bearer " + token,
+  };
+}
+
+function JobsSection({ token }) {
   const [jobs, setJobs] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [form, setForm] = useState(emptyJob);
@@ -48,9 +55,6 @@ function JobsSection() {
   function handleSubmit(event) {
     event.preventDefault();
 
-    const company = companies.find((c) => String(c.id) === String(form.company_id));
-    const job = { ...form, company_name: company ? company.name : "" };
-
     let url = API_URL + "/advertisements";
     let method = "POST";
     if (editingId) {
@@ -60,8 +64,8 @@ function JobsSection() {
 
     fetch(url, {
       method: method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(job),
+      headers: authHeaders(token),
+      body: JSON.stringify(form),
     }).then(() => {
       setForm(emptyJob);
       setEditingId(null);
@@ -70,7 +74,17 @@ function JobsSection() {
   }
 
   function handleEdit(job) {
-    setForm(job);
+    setForm({
+      title: job.title,
+      short_description: job.short_description,
+      full_description: job.full_description || "",
+      company_id: job.company_id,
+      location: job.location || "",
+      contract_type: job.contract_type || "",
+      working_time: job.working_time || "",
+      salary: job.salary || "",
+      remote: job.remote,
+    });
     setEditingId(job.id);
   }
 
@@ -83,7 +97,10 @@ function JobsSection() {
     if (!window.confirm("Delete this job?")) {
       return;
     }
-    fetch(API_URL + "/advertisements/" + id, { method: "DELETE" }).then(() => loadJobs());
+    fetch(API_URL + "/advertisements/" + id, {
+      method: "DELETE",
+      headers: authHeaders(token),
+    }).then(() => loadJobs());
   }
 
   return (
@@ -189,7 +206,7 @@ function JobsSection() {
   );
 }
 
-function CompaniesSection() {
+function CompaniesSection({ token }) {
   const [companies, setCompanies] = useState([]);
   const [form, setForm] = useState(emptyCompany);
   const [editingId, setEditingId] = useState(null);
@@ -220,7 +237,7 @@ function CompaniesSection() {
 
     fetch(url, {
       method: method,
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders(token),
       body: JSON.stringify(form),
     }).then(() => {
       setForm(emptyCompany);
@@ -249,7 +266,10 @@ function CompaniesSection() {
     if (!window.confirm("Delete this company and all its jobs?")) {
       return;
     }
-    fetch(API_URL + "/companies/" + id, { method: "DELETE" }).then(() => loadCompanies());
+    fetch(API_URL + "/companies/" + id, {
+      method: "DELETE",
+      headers: authHeaders(token),
+    }).then(() => loadCompanies());
   }
 
   return (
@@ -322,32 +342,23 @@ function CompaniesSection() {
   );
 }
 
-function ApplicationsSection() {
+function ApplicationsSection({ token }) {
   const [applications, setApplications] = useState([]);
-  const [jobs, setJobs] = useState([]);
 
   function loadApplications() {
-    fetch(API_URL + "/applications")
+    fetch(API_URL + "/applications", { headers: authHeaders(token) })
       .then((res) => res.json())
       .then((data) => setApplications(data));
   }
 
   useEffect(() => {
     loadApplications();
-    fetch(API_URL + "/advertisements")
-      .then((res) => res.json())
-      .then((data) => setJobs(data));
   }, []);
-
-  function getJobTitle(adId) {
-    const job = jobs.find((j) => String(j.id) === String(adId));
-    return job ? job.title : "Deleted job";
-  }
 
   function handleMarkRead(id) {
     fetch(API_URL + "/applications/" + id, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders(token),
       body: JSON.stringify({ status: "read" }),
     }).then(() => loadApplications());
   }
@@ -356,7 +367,10 @@ function ApplicationsSection() {
     if (!window.confirm("Delete this application?")) {
       return;
     }
-    fetch(API_URL + "/applications/" + id, { method: "DELETE" }).then(() => loadApplications());
+    fetch(API_URL + "/applications/" + id, {
+      method: "DELETE",
+      headers: authHeaders(token),
+    }).then(() => loadApplications());
   }
 
   return (
@@ -373,6 +387,7 @@ function ApplicationsSection() {
               <th>Name</th>
               <th>Email</th>
               <th>Message</th>
+              <th>Date</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -380,11 +395,12 @@ function ApplicationsSection() {
           <tbody>
             {applications.map((application) => (
               <tr key={application.id}>
-                <td>{getJobTitle(application.ad_id)}</td>
+                <td>{application.ad_title}</td>
                 <td>{application.name}</td>
                 <td>{application.email}</td>
                 <td>{application.message}</td>
-                <td>{application.status || "sent"}</td>
+                <td>{new Date(application.created_at).toLocaleDateString()}</td>
+                <td>{application.status}</td>
                 <td className="admin-actions">
                   {application.status !== "read" && (
                     <button className="btn-outline" onClick={() => handleMarkRead(application.id)}>MARK READ</button>
@@ -400,13 +416,13 @@ function ApplicationsSection() {
   );
 }
 
-function Admin() {
+function Admin({ token }) {
   return (
     <section className="admin">
       <h1>Admin</h1>
-      <JobsSection />
-      <CompaniesSection />
-      <ApplicationsSection />
+      <JobsSection token={token} />
+      <CompaniesSection token={token} />
+      <ApplicationsSection token={token} />
     </section>
   );
 }

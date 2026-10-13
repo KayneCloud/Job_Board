@@ -62,8 +62,8 @@ function App() {
 
       {page === "register" && <Register onRegister={handleLogin} />}
 
-      {page === "admin" && user && user.role === "admin" && <Admin />}
-
+      {page === "admin" && user && user.role === "admin" && <Admin token={user.token} />}
+      
       {page === "jobs" && (
         <div>
           <Hero search={search} setSearch={setSearch} location={location} setLocation={setLocation} />

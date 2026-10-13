@@ -655,4 +655,4 @@ def delete_person(person_id):
 
 # 10. START SERVER ================================================
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5001)

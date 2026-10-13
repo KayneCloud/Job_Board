@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { login } from "../auth";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -13,7 +14,7 @@ function Register({ onRegister }) {
   function handleSubmit(event) {
     event.preventDefault();
 
-    fetch(API_URL + "/people", {
+    fetch(API_URL + "/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -22,17 +23,16 @@ function Register({ onRegister }) {
         email: email,
         phone: phone,
         password: password,
-        role: "user",
       }),
     })
       .then((res) => {
         if (!res.ok) {
           throw new Error();
         }
-        return res.json();
+        return login(email, password);
       })
       .then((user) => onRegister(user))
-      .catch(() => setError("Could not create account"));
+      .catch(() => setError("Could not create account. This email may already be used."));
   }
 
   return (

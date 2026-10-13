@@ -8,15 +8,15 @@ function ApplyForm({ jobId, user }) {
   const [phone, setPhone] = useState(user ? user.phone : "");
   const [message, setMessage] = useState("");
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
 
   function handleSubmit(event) {
     event.preventDefault();
 
-    fetch(API_URL + "/applications", {
+    fetch(API_URL + "/advertisements/" + jobId + "/applications", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        ad_id: jobId,
         person_id: user ? user.id : null,
         name: name,
         email: email,
@@ -26,6 +26,8 @@ function ApplyForm({ jobId, user }) {
     }).then((res) => {
       if (res.ok) {
         setSent(true);
+      } else {
+        setError("Could not send your application");
       }
     });
   }
@@ -48,13 +50,15 @@ function ApplyForm({ jobId, user }) {
 
       <label>
         Phone
-        <input value={phone} onChange={(e) => setPhone(e.target.value)} />
+        <input value={phone || ""} onChange={(e) => setPhone(e.target.value)} />
       </label>
 
       <label>
         Message
         <textarea value={message} onChange={(e) => setMessage(e.target.value)} required />
       </label>
+
+      {error && <p className="form-error">{error}</p>}
 
       <button type="submit" className="btn-primary">SEND</button>
     </form>
