@@ -3,13 +3,14 @@ import pymysql
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from dotenv import load_dotenv
+from werkzeug.security import generate_password_hash
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-# DATABASE CONNECTION
+# DATABASE CONNECTION ==================================
 
 def get_db():
     """Open a connection to MySQL."""
@@ -21,7 +22,8 @@ def get_db():
         cursorclass=pymysql.cursors.DictCursor,
     )
 
-# HEALTH CHECK
+# HEALTH CHECK ==========================================
+# checks that Flask can reach MySQL (lists the tables)
 @app.route ("/api/health", methods=["GET"])
 def health():
     conn = get_db()
@@ -31,7 +33,8 @@ def health():
     conn.close()
     return jsonify({"status": "ok", "tables": tables}), 200
 
-# COMPANY SECTION
+# COMPANY SECTION ========================================
+# list all companies
 @app.route("/api/companies", methods=["GET"])
 def get_companies():
     conn = get_db()
@@ -41,6 +44,7 @@ def get_companies():
     conn.close()
     return jsonify(companies), 200
 
+# get one company (404 if it does not exist)
 @app.route("/api/companies/<int:company_id>", methods = ["GET"])
 def get_company(company_id):
     conn = get_db()
@@ -53,6 +57,7 @@ def get_company(company_id):
         return jsonify({"error": "Company not found"}), 404
     return jsonify(company), 200
 
+# create a company (name required, returns 201 + new id)
 @app.route("/api/companies", methods=["POST"])
 def create_company():
     data = request.get_json()
@@ -74,6 +79,7 @@ def create_company():
 
     return jsonify({"id": new_id, "message": "Company created"}), 201   
 
+# replace all the info of a company (404 if not found)
 @app.route("/api/companies/<int:company_id>", methods=["PUT"])
 def update_company(company_id):
     data=request.get_json()
@@ -102,6 +108,7 @@ def update_company(company_id):
         return jsonify({"error": "Company not found"}), 404
     return jsonify({"message": "Company updated"}), 200
 
+# delete a company (its ads are deleted too)
 @app.route("/api/companies/<int:company_id>", methods=["DELETE"])
 def delete_company(company_id):
     conn = get_db()
@@ -115,7 +122,8 @@ def delete_company(company_id):
         return jsonify ({"error": "Company not found"}), 404
     return jsonify({"message": "Company deleted"}), 200
 
-# ADVERTISEMENT SECTION
+# ADVERTISEMENT SECTION =======================================
+# create a job ad (title, short_description, company_id required)
 @app.route("/api/advertisements", methods=["POST"])
 def create_advertisement():
     data = request.get_json()
@@ -153,6 +161,7 @@ def create_advertisement():
 
     return jsonify({"id": new_id, "message": "Advertisement created"}), 201
 
+# list all ads + company name, newest first (job board page)
 @app.route("/api/advertisements", methods=["GET"])
 def get_advertisements():
     conn=get_db()
@@ -168,6 +177,7 @@ def get_advertisements():
     conn.close()
     return jsonify(ads), 200
 
+# all details of one ad + company info
 @app.route("/api/advertisements/<int:ad_id>", methods=["GET"])
 def get_advertisement(ad_id):
     conn = get_db()
@@ -187,6 +197,7 @@ def get_advertisement(ad_id):
         return jsonify({"error": "Advertisement not found"}), 404
     return jsonify(ad), 200
 
+# replace all the info of an ad
 @app.route("/api/advertisements/<int:ad_id>", methods=["PUT"])
 def update_advertisement(ad_id):
     data = request.get_json()
@@ -228,6 +239,7 @@ def update_advertisement(ad_id):
         return jsonify({"error": "Advertisement not found"}), 404
     return jsonify({"message": "Advertisement updated"}), 200
 
+# delete an ad (its applications are deleted too)
 @app.route("/api/advertisements/<int:ad_id>", methods=["DELETE"])
 def delete_advertisement(ad_id):
     conn = get_db()
@@ -241,7 +253,8 @@ def delete_advertisement(ad_id):
         return jsonify({"error": "Adverti   sement not found"}), 404
     return jsonify({"message": "Advertisement deleted"}), 200
 
-# APPLICATION SECTION
+# APPLICATION SECTION ===========================================
+# apply to an ad
 @app.route("/api/advertisements/<int:ad_id>/applications", methods=["POST"])
 def create_application(ad_id):
     data = request.get_json()
@@ -278,6 +291,7 @@ def create_application(ad_id):
 
     return jsonify({"id": new_id, "message": "Application sent"}), 201
 
+# list all applications + job title (admin page)
 @app.route("/api/applications", methods=["GET"])
 def get_applications():
     conn = get_db()
@@ -292,6 +306,7 @@ def get_applications():
     conn.close()
     return jsonify(applications), 200
 
+# list the applications for one ad
 @app.route("/api/advertisements/<int:ad_id>/applications", methods=["GET"])
 def get_applications_for_ad(ad_id):
     conn = get_db()
@@ -311,6 +326,7 @@ def get_applications_for_ad(ad_id):
     conn.close()
     return jsonify(applications), 200
 
+# get one application + job title
 @app.route("/api/applications/<int:application_id>", methods=["GET"])
 def get_application(application_id):
     conn = get_db()
@@ -329,6 +345,7 @@ def get_application(application_id):
         return jsonify({"error": "Application not found"}), 404
     return jsonify(application), 200
 
+# change only the status ("sent" or "read")
 @app.route("/api/applications/<int:application_id>", methods=["PATCH"])
 def update_application_status(application_id):
     data = request.get_json()
@@ -350,6 +367,7 @@ def update_application_status(application_id):
         return jsonify({"error": "Application not found"}), 404
     return jsonify({"message": "Status updated"}), 200
 
+# delete an application
 @app.route("/api/applications/<int:application_id>", methods=["DELETE"])
 def delete_application(application_id):
     conn = get_db()
@@ -363,6 +381,167 @@ def delete_application(application_id):
         return jsonify({"error": "Application not found"}), 404
     return jsonify({"message": "Application deleted"}), 200
 
-# START SERVER
+# PEOPLE SECTION
+
+PEOPLE_COLUMNS = """p.id, p.first_name, p.last_name, p.email, p.phone,
+                    p.role, p.company_id, p.created_at, c.name AS company_name"""
+
+
+# list all people + company name, except the password_hash
+@app.route("/api/people", methods=["GET"])
+def get_people():
+    conn = get_db()
+    with conn.cursor() as cursor:
+        cursor.execute(
+            f"""SELECT {PEOPLE_COLUMNS}
+                FROM people p
+                LEFT JOIN companies c ON p.company_id = c.id
+                ORDER BY p.id"""
+        )
+        people = cursor.fetchall()
+    conn.close()
+    return jsonify(people), 200
+
+
+# get one person, except the password_hash
+@app.route("/api/people/<int:person_id>", methods=["GET"])
+def get_person(person_id):
+    conn = get_db()
+    with conn.cursor() as cursor:
+        cursor.execute(
+            f"""SELECT {PEOPLE_COLUMNS}
+                FROM people p
+                LEFT JOIN companies c ON p.company_id = c.id
+                WHERE p.id = %s""",
+            (person_id,),
+        )
+        person = cursor.fetchone()
+    conn.close()
+
+    if person is None:
+        return jsonify({"error": "Person not found"}), 404
+    return jsonify(person), 200
+
+# create an account, password is hashed, role only "user" or "employer"
+@app.route("/api/auth/signup", methods=["POST"])
+def signup():
+    data=request.get_json()
+
+    required = ["first_name", "last_name", "email", "password"]
+    if not data or not all(data.get(field) for field in required):
+        return jsonify({"error": "first_name, last_name, email and password are required"}), 400
+
+    role = data.get("role", "user")
+    if role not in ("user", "employer"):
+        return jsonify({"error": "role must be 'user' or 'employer'"}), 400
+
+    password_hash = generate_password_hash(data["password"])
+
+    conn = get_db()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT id FROM people WHERE email=%s", (data["email"],))
+            if cursor.fetchone() is not None:
+                return jsonify({"error": "This email is already used"}), 409
+
+            cursor.execute(
+                """INSERT INTO people (first_name, last_name, email, phone, password_hash, role, company_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+                (data["first_name"],
+                data["last_name"],
+                data["email"],
+                data.get("phone"),
+                password_hash,
+                role,
+                data.get("company_id") 
+                ),
+            )
+            conn.commit()
+            new_id = cursor.lastrowid
+    except pymysql.err.IntegrityError:
+        return jsonify({"error": "company_id does not exist"}), 400
+    finally:
+        conn.close()
+
+    return jsonify({"id": new_id, "message": "Account created"}), 201
+
+# update a person (not the password), email must stay unique
+@app.route("/api/people/<int:person_id>", methods=["PUT"])
+def update_person(person_id):
+    data = request.get_json()
+
+    required = ["first_name", "last_name", "email"]
+    if not data or not all(data.get(field) for field in required):
+        return jsonify({"error": "first_name, last_name and email are required"}), 400
+
+    role = data.get("role", "user")
+    if role not in ("user", "employer", "admin"):
+        return jsonify({"error": "role must be 'user', 'employer' or 'admin'"}), 400
+
+    conn = get_db()
+    try:
+        with conn.cursor() as cursor:
+            # Is this email used by SOMEONE ELSE?
+            cursor.execute(
+                "SELECT id FROM people WHERE email=%s AND id != %s",
+                (data["email"], person_id),
+            )
+            if cursor.fetchone() is not None:
+                return jsonify({"error": "This email is already used"}), 409
+
+            cursor.execute(
+                """UPDATE people
+                   SET first_name=%s, last_name=%s, email=%s, phone=%s, role=%s, company_id=%s
+                   WHERE id=%s""",
+                (
+                    data["first_name"],
+                    data["last_name"],
+                    data["email"],
+                    data.get("phone"),
+                    role,
+                    data.get("company_id"),
+                    person_id,
+                ),
+            )
+            conn.commit()
+            changed = cursor.rowcount
+    except pymysql.err.IntegrityError:
+        return jsonify({"error": "company_id does not exist"}), 400
+    finally:
+        conn.close()
+
+    if changed == 0:
+        return jsonify({"error": "Person not found"}), 404
+    return jsonify({"message": "Person updated"}), 200
+
+# delete a person + all their applications + all the ads they are contact for
+@app.route("/api/people/<int:person_id>", methods=["DELETE"])
+def delete_person(person_id):
+    conn = get_db()
+    with conn.cursor() as cursor:
+
+        cursor.execute("SELECT id FROM people WHERE id=%s", (person_id,))
+        if cursor.fetchone() is None:
+            conn.close()
+            return jsonify({"error": "Person not found"}), 404
+
+        cursor.execute("DELETE FROM applications WHERE person_id=%s", (person_id,))
+        deleted_applications = cursor.rowcount
+
+        cursor.execute("DELETE FROM advertisements WHERE contact_id=%s", (person_id,))
+        deleted_ads = cursor.rowcount
+
+        cursor.execute("DELETE FROM people WHERE id=%s", (person_id,))
+
+        conn.commit()
+    conn.close()
+
+    return jsonify({
+        "message": "Person deleted",
+        "deleted_applications": deleted_applications,
+        "deleted_ads": deleted_ads,
+    }), 200
+
+# START SERVER ================================================
 if __name__ == "__main__":
     app.run(debug=True)
