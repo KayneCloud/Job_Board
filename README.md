@@ -76,3 +76,16 @@ En cours : routes pour les offres, les candidatures, les comptes et la connexion
 - **Sign in** : connexion (l'admin est redirigé vers la page admin)
 - **Create account** : création de compte
 - **Admin** : gestion de la base (en cours)
+
+
+
+connexion 
+employeur
+documentation 
+
+ppt
+tenue pro 
+
+tres pro
+pas un truc de fou 
+exprimer sur ce qon en pense tout ça, retour critique
