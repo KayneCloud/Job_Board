@@ -6,6 +6,7 @@ import Header from "./components/Header";
 import Hero from "./components/Hero";
 import Filters from "./components/Filters";
 import Footer from "./components/Footer";
+import Admin from "./components/Admin";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -21,7 +22,7 @@ function App() {
     fetch(API_URL + "/advertisements")
       .then((res) => res.json())
       .then((data) => setJobs(data));
-  }, []);
+  }, [page]);
 
   const types = ["All", ...new Set(jobs.map((job) => job.contract_type))];
 
@@ -61,7 +62,7 @@ function App() {
 
       {page === "register" && <Register onRegister={handleLogin} />}
 
-      {page === "admin" && user && user.role === "admin" && <h1>Admin</h1>}
+      {page === "admin" && user && user.role === "admin" && <Admin />}
 
       {page === "jobs" && (
         <div>

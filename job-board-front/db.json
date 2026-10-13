@@ -41,8 +41,16 @@
     }
   ],
   "companies": [
-    { "id": "1", "name": "Le Grand Bistrot", "city": "Marseille" },
-    { "id": "2", "name": "Food & Co", "city": "Lyon" }
+    {
+      "id": "1",
+      "name": "Le Grand Bistrot",
+      "city": "Marseille"
+    },
+    {
+      "id": "2",
+      "name": "Food & Co",
+      "city": "Lyon"
+    }
   ],
   "people": [
     {
@@ -64,5 +72,16 @@
       "role": "user"
     }
   ],
-  "applications": []
+  "applications": [
+    {
+      "ad_id": "1",
+      "person_id": "2",
+      "name": "Jane Doe",
+      "email": "jane@chefs.dev",
+      "phone": "0600000000",
+      "message": "esrdtfyguhijl",
+      "id": "mr5JdKhAPV8"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }
