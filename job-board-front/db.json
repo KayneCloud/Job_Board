@@ -72,16 +72,5 @@
       "role": "user"
     }
   ],
-  "applications": [
-    {
-      "ad_id": "1",
-      "person_id": "2",
-      "name": "Jane Doe",
-      "email": "jane@chefs.dev",
-      "phone": "0600000000",
-      "message": "esrdtfyguhijl",
-      "id": "mr5JdKhAPV8"
-    }
-  ],
-  "$schema": "./node_modules/json-server/schema.json"
+  "applications": []
 }

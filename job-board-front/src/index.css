@@ -525,3 +525,24 @@ textarea {
     overflow-x: auto;
   }
 }
+
+.admin-section {
+  margin-top: 40px;
+}
+
+.admin-section-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  border-bottom: 3px solid var(--sauce);
+  padding-bottom: 6px;
+}
+
+.admin-empty {
+  margin: 24px 0;
+  background: var(--plate);
+  border-radius: 22px;
+  padding: 24px;
+  color: var(--muted);
+  font-weight: 500;
+}
