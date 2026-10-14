@@ -733,6 +733,43 @@ def me():
         return jsonify({"error": "You must be logged in"}), 401
     return jsonify(user), 200
 
+# the logged-in user edits their own name, email and phone
+@app.route("/api/auth/me", methods=["PUT"])
+@login_required
+def update_me():
+    data = request.get_json()
+
+    required = ["first_name", "last_name", "email"]
+    if not data or not all(data.get(field) for field in required):
+        return jsonify({"error": "first_name, last_name and email are required"}), 400
+
+    conn = get_db()
+    with conn.cursor() as cursor:
+        cursor.execute(
+            "SELECT id FROM people WHERE email=%s AND id != %s",
+            (data["email"], g.user["id"]),
+        )
+        if cursor.fetchone() is not None:
+            conn.close()
+            return jsonify({"error": "This email is already used"}), 409
+
+        cursor.execute(
+            """UPDATE people
+               SET first_name=%s, last_name=%s, email=%s, phone=%s
+               WHERE id=%s""",
+            (
+                data["first_name"],
+                data["last_name"],
+                data["email"],
+                data.get("phone"),
+                g.user["id"],
+            ),
+        )
+        conn.commit()
+    conn.close()
+
+    return jsonify(get_current_user()), 200
+
 # update a person (not the password), email must stay unique
 @app.route("/api/people/<int:person_id>", methods=["PUT"])
 @admin_required
