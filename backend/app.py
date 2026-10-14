@@ -17,15 +17,20 @@ CORS(app)
 # 1. Imports              -> libraries (Flask, PyMySQL, CORS, dotenv, itsdangerous, werkzeug)
 # 2. Setup                -> load .env, create the Flask app, enable CORS
 # 3. Database connection  -> get_db(): opens a connection to MySQL
-# 4. Auth helpers         -> create_token(), get_current_user(), @admin_required
+# 4. Auth helpers         -> create_token(), get_current_user(), can_manage_ad(),
+#                            @login_required, @employer_required, @admin_required
 # 5. Health check         -> GET /api/health
 # 6. Companies            -> CRUD /api/companies
-# 7. Advertisements       -> CRUD /api/advertisements
-# 8. Applications         -> apply to an ad + CRUD /api/applications
-# 9. People & auth        -> CRUD /api/people + signup, login, me (/api/auth/...)
-# 10. Start server        -> app.run()
+# 7. Advertisements       -> CRUD /api/advertisements (employers: own company only)
+# 8. Applications         -> apply to an ad + CRUD /api/applications + /api/me/applications
+# 9. Favourites           -> /api/me/favourites (add, remove, list)
+# 10. People & auth       -> CRUD /api/people + signup, login, me (/api/auth/...)
+# 11. Start server        -> app.run()
 #
-# Admin-only routes are marked with @admin_required
+# Protection levels:
+#   @login_required    -> any logged-in user
+#   @employer_required -> employers and admins
+#   @admin_required    -> admins only
 # ==============================================================
 
 # 3. DATABASE CONNECTION ==================================
@@ -97,6 +102,16 @@ def employer_required(route_function):
         return route_function(*args, **kwargs)
     return wrapper
 
+def login_required(route_function):
+    """Put @login_required under @app.route to allow any logged-in user."""
+    @wraps(route_function)
+    def wrapper(*args, **kwargs):
+        user = get_current_user()
+        if user is None:
+            return jsonify({"error": "You must be logged in"}), 401
+        g.user = user
+        return route_function(*args, **kwargs)
+    return wrapper
 
 def can_manage_ad(user, ad_id):
     """Admins can manage every ad. Employers only the ads of their own company."""
@@ -535,8 +550,71 @@ def delete_application(application_id):
         return jsonify({"error": "Application not found"}), 404
     return jsonify({"message": "Application deleted"}), 200
 
-# 9. PEOPLE SECTION & AUTH ==================================================
 
+# 9. FAVOURITES ===============================================
+
+# add an ad to my favourites
+@app.route("/api/me/favourites/<int:ad_id>", methods=["POST"])
+@login_required
+def add_favourite(ad_id):
+    conn = get_db()
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT id FROM advertisements WHERE id=%s", (ad_id,))
+        if cursor.fetchone() is None:
+            conn.close()
+            return jsonify({"error": "Advertisement not found"}), 404
+
+        cursor.execute(
+            "INSERT IGNORE INTO favourites (person_id, ad_id) VALUES (%s, %s)",
+            (g.user["id"], ad_id),
+        )
+        conn.commit()
+        added = cursor.rowcount
+    conn.close()
+
+    if added == 0:
+        return jsonify({"message": "Already in favourites"}), 200
+    return jsonify({"message": "Added to favourites"}), 201
+
+# remove an ad from my favourites
+@app.route("/api/me/favourites/<int:ad_id>", methods=["DELETE"])
+@login_required
+def remove_favourite(ad_id):
+    conn = get_db()
+    with conn.cursor() as cursor:
+        cursor.execute(
+            "DELETE FROM favourites WHERE person_id=%s AND ad_id=%s",
+            (g.user["id"], ad_id),
+        )
+        conn.commit()
+        deleted = cursor.rowcount
+    conn.close()
+
+    if deleted == 0:
+        return jsonify({"error": "This ad is not in your favourites"}), 404
+    return jsonify({"message": "Removed from favourites"}), 200
+
+# list my favourite ads (newest like first)
+@app.route("/api/me/favourites", methods=["GET"])
+@login_required
+def get_my_favourites():
+    conn = get_db()
+    with conn.cursor() as cursor:
+        cursor.execute(
+            """SELECT a.*, c.name AS company_name, f.created_at AS favourited_at
+               FROM favourites f
+               JOIN advertisements a ON f.ad_id = a.id
+               JOIN companies c ON a.company_id = c.id
+               WHERE f.person_id = %s
+               ORDER BY f.created_at DESC""",
+            (g.user["id"],),
+        )
+        favourites = cursor.fetchall()
+    conn.close()
+    return jsonify(favourites), 200
+
+
+# 10. PEOPLE SECTION & AUTH ==================================================
 PEOPLE_COLUMNS = """p.id, p.first_name, p.last_name, p.email, p.phone,
                     p.role, p.company_id, p.created_at, c.name AS company_name"""
 
@@ -655,6 +733,43 @@ def me():
         return jsonify({"error": "You must be logged in"}), 401
     return jsonify(user), 200
 
+# the logged-in user edits their own name, email and phone
+@app.route("/api/auth/me", methods=["PUT"])
+@login_required
+def update_me():
+    data = request.get_json()
+
+    required = ["first_name", "last_name", "email"]
+    if not data or not all(data.get(field) for field in required):
+        return jsonify({"error": "first_name, last_name and email are required"}), 400
+
+    conn = get_db()
+    with conn.cursor() as cursor:
+        cursor.execute(
+            "SELECT id FROM people WHERE email=%s AND id != %s",
+            (data["email"], g.user["id"]),
+        )
+        if cursor.fetchone() is not None:
+            conn.close()
+            return jsonify({"error": "This email is already used"}), 409
+
+        cursor.execute(
+            """UPDATE people
+               SET first_name=%s, last_name=%s, email=%s, phone=%s
+               WHERE id=%s""",
+            (
+                data["first_name"],
+                data["last_name"],
+                data["email"],
+                data.get("phone"),
+                g.user["id"],
+            ),
+        )
+        conn.commit()
+    conn.close()
+
+    return jsonify(get_current_user()), 200
+
 # update a person (not the password), email must stay unique
 @app.route("/api/people/<int:person_id>", methods=["PUT"])
 @admin_required
@@ -736,6 +851,6 @@ def delete_person(person_id):
 
 
 
-# 10. START SERVER ================================================
+# 11. START SERVER ================================================
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
