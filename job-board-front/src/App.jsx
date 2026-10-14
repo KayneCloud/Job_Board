@@ -8,6 +8,7 @@ import Filters from "./components/Filters";
 import Footer from "./components/Footer";
 import Admin from "./components/Admin";
 import Employer from "./components/Employer";
+import Profile from "./components/Profile";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -82,6 +83,8 @@ function App() {
 
         {page === "employer" && user && user.role === "employer" && <Employer user={user} />}
 
+        {page === "profile" && user && user.role === "user" && <Profile user={user} onUpdate={setUser} />}
+        
         {page === "jobs" && (
           <div>
             <Hero search={search} setSearch={setSearch} location={location} setLocation={setLocation} />

@@ -40,6 +40,15 @@ function Header({ page, setPage, user, onLogout }) {
             </button>
           )}
 
+          {user && user.role === "user" && (
+            <button
+              className={page === "profile" ? "nav-link active" : "nav-link"}
+              onClick={() => setPage("profile")}
+            >
+              MY PROFILE
+            </button>
+          )}
+
           {user && (
             <button className="nav-link outline" onClick={onLogout}>
               LOG OUT
