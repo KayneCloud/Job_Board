@@ -396,14 +396,6 @@ function ApplicationsSection({ token }) {
     loadApplications();
   }, []);
 
-  function handleMarkRead(id) {
-    fetch(API_URL + "/applications/" + id, {
-      method: "PATCH",
-      headers: authHeaders(token),
-      body: JSON.stringify({ status: "read" }),
-    }).then(() => loadApplications());
-  }
-
   function handleDelete(id) {
     if (!window.confirm("Delete this application?")) {
       return;
@@ -432,7 +424,6 @@ function ApplicationsSection({ token }) {
                 <th>Email</th>
                 <th>Message</th>
                 <th>Date</th>
-                <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -444,11 +435,7 @@ function ApplicationsSection({ token }) {
                   <td>{application.email}</td>
                   <td>{application.message}</td>
                   <td>{new Date(application.created_at).toLocaleDateString()}</td>
-                  <td>{application.status}</td>
                   <td className="admin-actions">
-                    {application.status !== "read" && (
-                      <button className="btn-outline" onClick={() => handleMarkRead(application.id)}>MARK READ</button>
-                    )}
                     <button className="btn-primary" onClick={() => handleDelete(application.id)}>DELETE</button>
                   </td>
                 </tr>

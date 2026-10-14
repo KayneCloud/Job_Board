@@ -673,24 +673,6 @@ textarea {
   margin-top: 40px;
 }
 
-.status-badge {
-  display: inline-block;
-  padding: 3px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.status-sent {
-  background: var(--cream);
-  color: var(--sauce-dark);
-}
-
-.status-read {
-  background: var(--tile);
-  color: #1E3A50;
-}
 
 @media (min-width: 900px) {
   .admin-section:has(> .admin-form) {

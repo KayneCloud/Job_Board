@@ -2,11 +2,6 @@ import { useEffect, useState } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const statusLabels = {
-  sent: "Sent",
-  read: "Seen by the recruiter",
-};
-
 function Profile({ user, onUpdate }) {
   const [form, setForm] = useState({
     first_name: user.first_name,
@@ -17,9 +12,10 @@ function Profile({ user, onUpdate }) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [applications, setApplications] = useState([]);
+  const [applicationsError, setApplicationsError] = useState("");
 
   useEffect(() => {
-    fetch(API_URL + "/people/" + user.id + "/applications", {
+    fetch(API_URL + "/me/applications", {
       headers: { Authorization: "Bearer " + user.token },
     })
       .then((res) => {
@@ -29,7 +25,7 @@ function Profile({ user, onUpdate }) {
         return res.json();
       })
       .then((data) => setApplications(data))
-      .catch(() => setApplications([]));
+      .catch(() => setApplicationsError("Could not load your applications."));
   }, []);
 
   function handleChange(event) {
@@ -98,7 +94,11 @@ function Profile({ user, onUpdate }) {
       <div className="profile-section">
         <h2 className="admin-section-title">My applications</h2>
 
-        {applications.length === 0 && <p className="admin-empty">You have not applied to any job yet.</p>}
+        {applicationsError && <p className="admin-empty status-error">{applicationsError}</p>}
+
+        {!applicationsError && applications.length === 0 && (
+          <p className="admin-empty">You have not applied to any job yet.</p>
+        )}
 
         {applications.length > 0 && (
           <table className="admin-table">
@@ -108,7 +108,6 @@ function Profile({ user, onUpdate }) {
                 <th>Company</th>
                 <th>Message</th>
                 <th>Date</th>
-                <th>Status</th>
               </tr>
             </thead>
             <tbody>
@@ -118,11 +117,6 @@ function Profile({ user, onUpdate }) {
                   <td>{application.company_name}</td>
                   <td>{application.message}</td>
                   <td>{new Date(application.created_at).toLocaleDateString()}</td>
-                  <td>
-                    <span className={"status-badge status-" + application.status}>
-                      {statusLabels[application.status]}
-                    </span>
-                  </td>
                 </tr>
               ))}
             </tbody>
