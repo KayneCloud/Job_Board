@@ -31,6 +31,15 @@ function Header({ page, setPage, user, onLogout }) {
             </button>
           )}
 
+          {user && user.role === "employer" && (
+            <button
+              className={page === "employer" ? "nav-link active" : "nav-link"}
+              onClick={() => setPage("employer")}
+            >
+              MY COMPANY
+            </button>
+          )}
+
           {user && (
             <button className="nav-link outline" onClick={onLogout}>
               LOG OUT
@@ -39,19 +48,10 @@ function Header({ page, setPage, user, onLogout }) {
 
           {!user && (
             <button
-              className={page === "login" ? "nav-link active" : "nav-link"}
+              className={page === "login" || page === "register" ? "nav-link outline active" : "nav-link outline"}
               onClick={() => setPage("login")}
             >
               SIGN IN
-            </button>
-          )}
-
-          {!user && (
-            <button
-              className={page === "register" ? "nav-link active" : "nav-link outline"}
-              onClick={() => setPage("register")}
-            >
-              CREATE ACCOUNT
             </button>
           )}
         </nav>

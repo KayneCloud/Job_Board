@@ -22,6 +22,16 @@ const emptyCompany = {
   description: "",
 };
 
+const emptyPerson = {
+  first_name: "",
+  last_name: "",
+  email: "",
+  phone: "",
+  password: "",
+  role: "user",
+  company_id: "",
+};
+
 function authHeaders(token) {
   return {
     "Content-Type": "application/json",
@@ -29,11 +39,34 @@ function authHeaders(token) {
   };
 }
 
+const PAGE_SIZE = 10;
+
+function Pagination({ page, total, onChange }) {
+  const pageCount = Math.ceil(total / PAGE_SIZE);
+
+  if (pageCount <= 1) {
+    return null;
+  }
+
+  return (
+    <div className="pagination">
+      <button className="btn-outline" disabled={page === 1} onClick={() => onChange(page - 1)}>
+        PREVIOUS
+      </button>
+      <span>Page {page} / {pageCount}</span>
+      <button className="btn-outline" disabled={page === pageCount} onClick={() => onChange(page + 1)}>
+        NEXT
+      </button>
+    </div>
+  );
+}
+
 function JobsSection({ token }) {
   const [jobs, setJobs] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [form, setForm] = useState(emptyJob);
   const [editingId, setEditingId] = useState(null);
+  const [page, setPage] = useState(1);
 
   function loadJobs() {
     fetch(API_URL + "/advertisements")
@@ -102,6 +135,8 @@ function JobsSection({ token }) {
       headers: authHeaders(token),
     }).then(() => loadJobs());
   }
+
+  const visibleJobs = jobs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div className="admin-section">
@@ -188,7 +223,7 @@ function JobsSection({ token }) {
           </tr>
         </thead>
         <tbody>
-          {jobs.map((job) => (
+          {visibleJobs.map((job) => (
             <tr key={job.id}>
               <td>{job.title}</td>
               <td>{job.company_name}</td>
@@ -202,6 +237,7 @@ function JobsSection({ token }) {
           ))}
         </tbody>
       </table>
+      <Pagination page={page} total={jobs.length} onChange={setPage} />
     </div>
   );
 }
@@ -210,6 +246,7 @@ function CompaniesSection({ token }) {
   const [companies, setCompanies] = useState([]);
   const [form, setForm] = useState(emptyCompany);
   const [editingId, setEditingId] = useState(null);
+  const [page, setPage] = useState(1);
 
   function loadCompanies() {
     fetch(API_URL + "/companies")
@@ -272,6 +309,8 @@ function CompaniesSection({ token }) {
     }).then(() => loadCompanies());
   }
 
+  const visibleCompanies = companies.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   return (
     <div className="admin-section">
       <h2 className="admin-section-title">Companies</h2>
@@ -325,7 +364,7 @@ function CompaniesSection({ token }) {
           </tr>
         </thead>
         <tbody>
-          {companies.map((company) => (
+          {visibleCompanies.map((company) => (
             <tr key={company.id}>
               <td>{company.name}</td>
               <td>{company.sector}</td>
@@ -338,12 +377,14 @@ function CompaniesSection({ token }) {
           ))}
         </tbody>
       </table>
+      <Pagination page={page} total={companies.length} onChange={setPage} />
     </div>
   );
 }
 
 function ApplicationsSection({ token }) {
   const [applications, setApplications] = useState([]);
+  const [page, setPage] = useState(1);
 
   function loadApplications() {
     fetch(API_URL + "/applications", { headers: authHeaders(token) })
@@ -373,6 +414,8 @@ function ApplicationsSection({ token }) {
     }).then(() => loadApplications());
   }
 
+  const visibleApplications = applications.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   return (
     <div className="admin-section">
       <h2 className="admin-section-title">Applications</h2>
@@ -380,38 +423,222 @@ function ApplicationsSection({ token }) {
       {applications.length === 0 && <p className="admin-empty">No applications yet.</p>}
 
       {applications.length > 0 && (
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Job</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Message</th>
-              <th>Date</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {applications.map((application) => (
-              <tr key={application.id}>
-                <td>{application.ad_title}</td>
-                <td>{application.name}</td>
-                <td>{application.email}</td>
-                <td>{application.message}</td>
-                <td>{new Date(application.created_at).toLocaleDateString()}</td>
-                <td>{application.status}</td>
-                <td className="admin-actions">
-                  {application.status !== "read" && (
-                    <button className="btn-outline" onClick={() => handleMarkRead(application.id)}>MARK READ</button>
-                  )}
-                  <button className="btn-primary" onClick={() => handleDelete(application.id)}>DELETE</button>
-                </td>
+        <>
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Job</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Message</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {visibleApplications.map((application) => (
+                <tr key={application.id}>
+                  <td>{application.ad_title}</td>
+                  <td>{application.name}</td>
+                  <td>{application.email}</td>
+                  <td>{application.message}</td>
+                  <td>{new Date(application.created_at).toLocaleDateString()}</td>
+                  <td>{application.status}</td>
+                  <td className="admin-actions">
+                    {application.status !== "read" && (
+                      <button className="btn-outline" onClick={() => handleMarkRead(application.id)}>MARK READ</button>
+                    )}
+                    <button className="btn-primary" onClick={() => handleDelete(application.id)}>DELETE</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <Pagination page={page} total={applications.length} onChange={setPage} />
+        </>
       )}
+    </div>
+  );
+}
+
+function PeopleSection({ token }) {
+  const [people, setPeople] = useState([]);
+  const [companies, setCompanies] = useState([]);
+  const [form, setForm] = useState(emptyPerson);
+  const [editingId, setEditingId] = useState(null);
+  const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+
+  function loadPeople() {
+    fetch(API_URL + "/people", { headers: authHeaders(token) })
+      .then((res) => res.json())
+      .then((data) => setPeople(data));
+  }
+
+  useEffect(() => {
+    loadPeople();
+    fetch(API_URL + "/companies")
+      .then((res) => res.json())
+      .then((data) => setCompanies(data));
+  }, []);
+
+  function handleChange(event) {
+    setForm({ ...form, [event.target.name]: event.target.value });
+  }
+
+  function resetForm() {
+    setForm(emptyPerson);
+    setEditingId(null);
+    setError("");
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault();
+
+    const person = { ...form, company_id: form.company_id || null };
+
+    let url = API_URL + "/auth/signup";
+    let method = "POST";
+    if (editingId) {
+      url = API_URL + "/people/" + editingId;
+      method = "PUT";
+    }
+
+    fetch(url, {
+      method: method,
+      headers: authHeaders(token),
+      body: JSON.stringify(person),
+    }).then((res) => {
+      if (!res.ok) {
+        setError("Could not save. This email may already be used.");
+        return;
+      }
+      resetForm();
+      loadPeople();
+    });
+  }
+
+  function handleEdit(person) {
+    setForm({
+      first_name: person.first_name,
+      last_name: person.last_name,
+      email: person.email,
+      phone: person.phone || "",
+      password: "",
+      role: person.role,
+      company_id: person.company_id || "",
+    });
+    setEditingId(person.id);
+    setError("");
+  }
+
+  function handleDelete(id) {
+    if (!window.confirm("Delete this person and all their applications?")) {
+      return;
+    }
+    fetch(API_URL + "/people/" + id, {
+      method: "DELETE",
+      headers: authHeaders(token),
+    }).then(() => loadPeople());
+  }
+
+  const visiblePeople = people.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  return (
+    <div className="admin-section">
+      <h2 className="admin-section-title">People</h2>
+
+      <form className="form-card admin-form" onSubmit={handleSubmit}>
+        <h2>{editingId ? "Edit person" : "Add a person"}</h2>
+
+        <label>
+          First name
+          <input name="first_name" value={form.first_name} onChange={handleChange} required />
+        </label>
+
+        <label>
+          Last name
+          <input name="last_name" value={form.last_name} onChange={handleChange} required />
+        </label>
+
+        <label>
+          Email
+          <input type="email" name="email" value={form.email} onChange={handleChange} required />
+        </label>
+
+        <label>
+          Phone
+          <input name="phone" value={form.phone} onChange={handleChange} />
+        </label>
+
+        {!editingId && (
+          <label>
+            Password
+            <input type="password" name="password" value={form.password} onChange={handleChange} required />
+          </label>
+        )}
+
+        <label>
+          Role
+          <select name="role" value={form.role} onChange={handleChange}>
+            <option value="user">User</option>
+            <option value="employer">Employer</option>
+            {editingId && <option value="admin">Admin</option>}
+          </select>
+        </label>
+
+        <label>
+          Company
+          <select name="company_id" value={form.company_id} onChange={handleChange}>
+            <option value="">None</option>
+            {companies.map((company) => (
+              <option key={company.id} value={company.id}>
+                {company.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {error && <p className="form-error">{error}</p>}
+
+        <button type="submit" className="btn-primary">
+          {editingId ? "SAVE CHANGES" : "ADD PERSON"}
+        </button>
+
+        {editingId && (
+          <button type="button" className="btn-outline" onClick={resetForm}>
+            CANCEL
+          </button>
+        )}
+      </form>
+
+      <table className="admin-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Company</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {visiblePeople.map((person) => (
+            <tr key={person.id}>
+              <td>{person.first_name} {person.last_name}</td>
+              <td>{person.email}</td>
+              <td>{person.role}</td>
+              <td>{person.company_name}</td>
+              <td className="admin-actions">
+                <button className="btn-outline" onClick={() => handleEdit(person)}>EDIT</button>
+                <button className="btn-primary" onClick={() => handleDelete(person.id)}>DELETE</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <Pagination page={page} total={people.length} onChange={setPage} />
     </div>
   );
 }
@@ -423,6 +650,7 @@ function Admin({ token }) {
       <JobsSection token={token} />
       <CompaniesSection token={token} />
       <ApplicationsSection token={token} />
+      <PeopleSection token={token} />
     </section>
   );
 }

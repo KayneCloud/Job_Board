@@ -20,6 +20,11 @@ export function login(email, password) {
         headers: { Authorization: "Bearer " + token },
       });
     })
-    .then((res) => res.json())
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error();
+      }
+      return res.json();
+    })
     .then((user) => ({ ...user, token: token }));
 }

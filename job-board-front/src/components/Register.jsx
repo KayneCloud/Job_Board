@@ -3,7 +3,7 @@ import { login } from "../Auth";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-function Register({ onRegister }) {
+function Register({ onRegister, onGoToLogin }) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -67,6 +67,13 @@ function Register({ onRegister }) {
       {error && <p className="form-error">{error}</p>}
 
       <button type="submit" className="btn-primary">CREATE ACCOUNT</button>
+
+      <p className="form-switch">
+        Already have an account?{" "}
+        <button type="button" className="link-button" onClick={onGoToLogin}>
+          Sign in
+        </button>
+      </p>
     </form>
   );
 }

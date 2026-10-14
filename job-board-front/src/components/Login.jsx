@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { login } from "../Auth";
 
-function Login({ onLogin }) {
+function Login({ onLogin, onGoToRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -31,6 +31,13 @@ function Login({ onLogin }) {
       {error && <p className="form-error">{error}</p>}
 
       <button type="submit" className="btn-primary">SIGN IN</button>
+
+      <p className="form-switch">
+        Don't have an account?{" "}
+        <button type="button" className="link-button" onClick={onGoToRegister}>
+          Create one
+        </button>
+      </p>
     </form>
   );
 }
