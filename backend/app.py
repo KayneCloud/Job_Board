@@ -1,6 +1,6 @@
 import os
 import pymysql
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, g
 from flask_cors import CORS
 from dotenv import load_dotenv
 from functools import wraps
@@ -81,6 +81,35 @@ def admin_required(route_function):
             return jsonify({"error": "Admins only"}), 403
         return route_function(*args, **kwargs)
     return wrapper
+
+def employer_required(route_function):
+    """Put @employer_required under @app.route to allow employers AND admins."""
+    @wraps(route_function)
+    def wrapper(*args, **kwargs):
+        user = get_current_user()
+        if user is None:
+            return jsonify({"error": "You must be logged in"}), 401
+        if user["role"] not in ("admin", "employer"):
+            return jsonify({"error": "Employers or admins only"}), 403
+        if user["role"] == "employer" and user["company_id"] is None:
+            return jsonify({"error": "Your account is not linked to a company"}), 403
+        g.user = user
+        return route_function(*args, **kwargs)
+    return wrapper
+
+
+def can_manage_ad(user, ad_id):
+    """Admins can manage every ad. Employers only the ads of their own company."""
+    if user["role"] == "admin":
+        return True
+    conn = get_db()
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT company_id FROM advertisements WHERE id=%s", (ad_id,))
+        ad = cursor.fetchone()
+    conn.close()
+    if ad is None:
+        return True   # the ad doesn't exist: let the route answer 404
+    return ad["company_id"] == user["company_id"]
 
 # 5. HEALTH CHECK ==========================================
 # checks that Flask can reach MySQL (lists the tables)
@@ -186,29 +215,40 @@ def delete_company(company_id):
     return jsonify({"message": "Company deleted"}), 200
 
 # 7. ADVERTISEMENT SECTION ==========================================
-# create a job ad (title, short_description, company_id required)
+# create an ad (admin: any company, employer: own company only)
 @app.route("/api/advertisements", methods=["POST"])
-@admin_required
+@employer_required
 def create_advertisement():
+    user = g.user
     data = request.get_json()
 
-    if not data or not data.get("title") or not data.get("short_description") or not data.get("company_id"):
-        return jsonify({"error": "title, short_description and company_id are required"}), 400
+    if not data or not data.get("title") or not data.get("short_description"):
+        return jsonify({"error": "title and short_description are required"}), 400
+
+    if user["role"] == "employer":
+        company_id = user["company_id"]
+        contact_id = user["id"]
+    else:
+        company_id = data.get("company_id")
+        contact_id = data.get("contact_id")
+
+    if not company_id:
+        return jsonify({"error": "company_id is required"}), 400
 
     conn = get_db()
     try:
         with conn.cursor() as cursor:
             cursor.execute(
                 """INSERT INTO advertisements
-                (title, short_description, full_description, company_id, contact_id, location, contract_type, working_time, salary, remote)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """,
+                   (title, short_description, full_description, company_id, contact_id,
+                    location, contract_type, working_time, salary, remote)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                 (
                     data["title"],
                     data["short_description"],
                     data.get("full_description"),
-                    data["company_id"],
-                    data.get("contact_id"),
+                    company_id,
+                    contact_id,
                     data.get("location"),
                     data.get("contract_type"),
                     data.get("working_time"),
@@ -220,7 +260,7 @@ def create_advertisement():
             new_id = cursor.lastrowid
     except pymysql.err.IntegrityError:
         return jsonify({"error": "company_id or contact_id does not exist"}), 400
-    finally: 
+    finally:
         conn.close()
 
     return jsonify({"id": new_id, "message": "Advertisement created"}), 201
@@ -261,14 +301,27 @@ def get_advertisement(ad_id):
         return jsonify({"error": "Advertisement not found"}), 404
     return jsonify(ad), 200
 
-# replace all the info of an ad
+# edit an ad (admin: any ad, employer: own company's ads)
 @app.route("/api/advertisements/<int:ad_id>", methods=["PUT"])
-@admin_required
+@employer_required
 def update_advertisement(ad_id):
-    data = request.get_json()
+    user = g.user
+    if not can_manage_ad(user, ad_id):
+        return jsonify({"error": "You can only edit your own company's ads"}), 403
 
-    if not data or not data.get("title") or not data.get("short_description") or not data.get("company_id"):
-        return jsonify({"error": "title, short_description and company_id are required"}), 400
+    data = request.get_json()
+    if not data or not data.get("title") or not data.get("short_description"):
+        return jsonify({"error": "title and short_description are required"}), 400
+
+    if user["role"] == "employer":
+        company_id = user["company_id"]
+        contact_id = user["id"]
+    else:
+        company_id = data.get("company_id")
+        contact_id = data.get("contact_id")
+
+    if not company_id:
+        return jsonify({"error": "company_id is required"}), 400
 
     conn = get_db()
     try:
@@ -283,8 +336,8 @@ def update_advertisement(ad_id):
                     data["title"],
                     data["short_description"],
                     data.get("full_description"),
-                    data["company_id"],
-                    data.get("contact_id"),
+                    company_id,
+                    contact_id,
                     data.get("location"),
                     data.get("contract_type"),
                     data.get("working_time"),
@@ -306,8 +359,10 @@ def update_advertisement(ad_id):
 
 # delete an ad (its applications are deleted too)
 @app.route("/api/advertisements/<int:ad_id>", methods=["DELETE"])
-@admin_required
+@employer_required
 def delete_advertisement(ad_id):
+    if not can_manage_ad(g.user, ad_id):
+        return jsonify({"error": "You can only delete your own company's ads"}), 403
     conn = get_db()
     with conn.cursor() as cursor:
         cursor.execute("DELETE FROM advertisements WHERE id=%s", (ad_id,))
@@ -324,6 +379,8 @@ def delete_advertisement(ad_id):
 @app.route("/api/advertisements/<int:ad_id>/applications", methods=["POST"])
 def create_application(ad_id):
     data = request.get_json()
+    user = get_current_user()
+    person_id = user["id"] if user else None
 
     if not data or not data.get("name") or not data.get("email") or not data.get("message"):
         return jsonify({"error": "name, email and message are required"}), 400
@@ -341,7 +398,7 @@ def create_application(ad_id):
                    VALUES (%s, %s, %s, %s, %s, %s)""",
                 (
                     ad_id,
-                    data.get("person_id"),
+                    person_id,
                     data["name"],
                     data["email"],
                     data.get("phone"),
@@ -356,6 +413,30 @@ def create_application(ad_id):
         conn.close()
 
     return jsonify({"id": new_id, "message": "Application sent"}), 201
+
+# see all applications sent by the logged-in user
+@app.route("/api/me/applications", methods=["GET"])
+def get_my_applications():
+    user = get_current_user()
+    if user is None:
+        return jsonify({"error": "You must be logged in"}), 401
+
+    conn = get_db()
+    with conn.cursor() as cursor:
+        cursor.execute(
+            """SELECT ap.id, ap.message, ap.status, ap.created_at,
+                      a.id AS ad_id, a.title AS ad_title, a.location,
+                      c.name AS company_name
+               FROM applications ap
+               JOIN advertisements a ON ap.ad_id = a.id
+               JOIN companies c ON a.company_id = c.id
+               WHERE ap.person_id = %s
+               ORDER BY ap.created_at DESC""",
+            (user["id"],),
+        )
+        applications = cursor.fetchall()
+    conn.close()
+    return jsonify(applications), 200
 
 # list all applications + job title (admin page)
 @app.route("/api/applications", methods=["GET"])
@@ -375,8 +456,10 @@ def get_applications():
 
 # list the applications for one ad
 @app.route("/api/advertisements/<int:ad_id>/applications", methods=["GET"])
-@admin_required
+@employer_required
 def get_applications_for_ad(ad_id):
+    if not can_manage_ad(g.user, ad_id):
+        return jsonify({"error": "You can only see applications to your own company's ads"}), 403
     conn = get_db()
     with conn.cursor() as cursor:
         cursor.execute("SELECT id FROM advertisements WHERE id=%s", (ad_id,))
