@@ -4,6 +4,7 @@ COLLATE utf8mb4_unicode_ci;
 
 USE job_board;
 
+DROP TABLE IF EXISTS favourites;
 DROP TABLE IF EXISTS applications;
 DROP TABLE IF EXISTS advertisements;
 DROP TABLE IF EXISTS people;
@@ -62,3 +63,12 @@ CREATE TABLE applications (
     FOREIGN KEY (ad_id) REFERENCES advertisements(id) ON DELETE CASCADE,
     FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE SET NULL
     );
+
+CREATE TABLE favourites (
+    person_id INT NOT NULL,
+    ad_id INT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (person_id, ad_id),
+    FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE CASCADE,
+    FOREIGN KEY (ad_id) REFERENCES advertisements(id) ON DELETE CASCADE
+);
