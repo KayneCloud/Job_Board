@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-function Profile({ user, onUpdate }) {
+function Profile({ user, onUpdate, favouriteJobs, onToggleFavourite }) {
   const [form, setForm] = useState({
     first_name: user.first_name,
     last_name: user.last_name,
@@ -90,6 +90,41 @@ function Profile({ user, onUpdate }) {
 
         <button type="submit" className="btn-primary">SAVE</button>
       </form>
+
+      <div className="profile-section">
+        <h2 className="admin-section-title">My favourites</h2>
+
+        {favouriteJobs.length === 0 && (
+          <p className="admin-empty">You have no favourite jobs yet.</p>
+        )}
+
+        {favouriteJobs.length > 0 && (
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Job</th>
+                <th>Company</th>
+                <th>Location</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {favouriteJobs.map((job) => (
+                <tr key={job.id}>
+                  <td>{job.title}</td>
+                  <td>{job.company_name}</td>
+                  <td>{job.location}</td>
+                  <td className="admin-actions">
+                    <button className="btn-outline" onClick={() => onToggleFavourite(job.id)}>
+                      REMOVE
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
 
       <div className="profile-section">
         <h2 className="admin-section-title">My applications</h2>

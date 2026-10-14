@@ -384,6 +384,26 @@ textarea {
   font-size: 13px;
 }
 
+.save-button {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid #E2CFA0;
+  background: transparent;
+  color: var(--sauce-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.save-button.active {
+  background: var(--cream);
+  border-color: var(--sauce);
+  color: var(--sauce);
+}
+
 .job-short {
   margin: 0;
   font-size: 14px;

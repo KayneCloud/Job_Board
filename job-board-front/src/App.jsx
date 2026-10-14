@@ -21,6 +21,7 @@ function App() {
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("");
   const [type, setType] = useState("All");
+  const [favouriteIds, setFavouriteIds] = useState([]);
 
   useEffect(() => {
     setLoading(true);
@@ -38,6 +39,37 @@ function App() {
       .finally(() => setLoading(false));
   }, [page]);
 
+  useEffect(() => {
+    if (!user || user.role !== "user") {
+      setFavouriteIds([]);
+      return;
+    }
+
+    fetch(API_URL + "/me/favourites", {
+      headers: { Authorization: "Bearer " + user.token },
+    })
+      .then((res) => res.json())
+      .then((data) => setFavouriteIds(data.map((job) => job.id)));
+  }, [user]);
+
+  function toggleFavourite(jobId) {
+    const isFavourite = favouriteIds.includes(jobId);
+
+    fetch(API_URL + "/me/favourites/" + jobId, {
+      method: isFavourite ? "DELETE" : "POST",
+      headers: { Authorization: "Bearer " + user.token },
+    }).then((res) => {
+      if (!res.ok) {
+        return;
+      }
+      if (isFavourite) {
+        setFavouriteIds(favouriteIds.filter((id) => id !== jobId));
+      } else {
+        setFavouriteIds([...favouriteIds, jobId]);
+      }
+    });
+  }
+
   const types = ["All", ...new Set(jobs.map((job) => job.contract_type).filter((t) => t))];
 
   const filteredJobs = jobs.filter((job) => {
@@ -47,6 +79,8 @@ function App() {
     const matchType = type === "All" || job.contract_type === type;
     return matchSearch && matchLocation && matchType;
   });
+
+  const favouriteJobs = jobs.filter((job) => favouriteIds.includes(job.id));
 
   function clearFilters() {
     setSearch("");
@@ -83,8 +117,15 @@ function App() {
 
         {page === "employer" && user && user.role === "employer" && <Employer user={user} />}
 
-        {page === "profile" && user && user.role === "user" && <Profile user={user} onUpdate={setUser} />}
-        
+        {page === "profile" && user && user.role === "user" && (
+          <Profile
+            user={user}
+            onUpdate={setUser}
+            favouriteJobs={favouriteJobs}
+            onToggleFavourite={toggleFavourite}
+          />
+        )}
+
         {page === "jobs" && (
           <div>
             <Hero search={search} setSearch={setSearch} location={location} setLocation={setLocation} />
@@ -102,7 +143,13 @@ function App() {
               )}
 
               {filteredJobs.map((job) => (
-                <JobCard key={job.id} job={job} user={user} />
+                <JobCard
+                  key={job.id}
+                  job={job}
+                  user={user}
+                  isFavourite={favouriteIds.includes(job.id)}
+                  onToggleFavourite={() => toggleFavourite(job.id)}
+                />
               ))}
             </section>
           </div>

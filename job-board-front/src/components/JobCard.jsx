@@ -18,7 +18,7 @@ function getInitials(name) {
     .toUpperCase();
 }
 
-function JobCard({ job, user }) {
+function JobCard({ job, user, isFavourite, onToggleFavourite }) {
   const [details, setDetails] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
@@ -45,6 +45,27 @@ function JobCard({ job, user }) {
             {job.location} · {remoteLabels[job.remote]} · {job.contract_type}
           </p>
         </div>
+
+        {user && user.role === "user" && (
+          <button
+            className={isFavourite ? "save-button active" : "save-button"}
+            onClick={onToggleFavourite}
+            aria-label={isFavourite ? "Remove from favourites" : "Add to favourites"}
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill={isFavourite ? "currentColor" : "none"}
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6 3h12v18l-6-4-6 4z" />
+            </svg>
+          </button>
+        )}
       </div>
 
       <p className="job-short">{job.short_description}</p>
