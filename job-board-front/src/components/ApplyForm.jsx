@@ -13,11 +13,15 @@ function ApplyForm({ jobId, user }) {
   function handleSubmit(event) {
     event.preventDefault();
 
+    const headers = { "Content-Type": "application/json" };
+    if (user) {
+      headers.Authorization = "Bearer " + user.token;
+    }
+
     fetch(API_URL + "/advertisements/" + jobId + "/applications", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: headers,
       body: JSON.stringify({
-        person_id: user ? user.id : null,
         name: name,
         email: email,
         phone: phone,
