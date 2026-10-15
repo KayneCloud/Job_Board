@@ -2,7 +2,7 @@ import { useState } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-function Profile({ user, onUpdate }) {
+function Profile({ user, onUpdate, title = "My profile" }) {
   const [form, setForm] = useState({
     first_name: user.first_name,
     last_name: user.last_name,
@@ -44,7 +44,7 @@ function Profile({ user, onUpdate }) {
 
   return (
     <form className="form-card" onSubmit={handleSubmit}>
-      <h1>My profile</h1>
+      <h1>{title}</h1>
 
       <label>
         First name

@@ -21,7 +21,7 @@ function authHeaders(token) {
   };
 }
 
-function Employer({ user }) {
+function Employer({ user, onGoToInfo }) {
   const [company, setCompany] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [form, setForm] = useState(emptyJob);
@@ -38,9 +38,15 @@ function Employer({ user }) {
   }
 
   useEffect(() => {
-    if (!user.company_id) {
-      return;
-    }
+      if (!user.company_id) {
+    return (
+      <section className="admin">
+        <h1>My jobs</h1>
+        <p className="admin-empty">Add your company before posting jobs.</p>
+        <button className="btn-primary" onClick={onGoToInfo}>ADD MY COMPANY</button>
+      </section>
+    );
+  }
     fetch(API_URL + "/companies/" + user.company_id)
       .then((res) => res.json())
       .then((data) => setCompany(data));
