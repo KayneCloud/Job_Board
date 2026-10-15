@@ -15,13 +15,6 @@ function Header({ page, setPage, user, onLogout }) {
         </button>
 
         <nav className="nav">
-          <button
-            className={page === "jobs" ? "nav-link active" : "nav-link"}
-            onClick={() => setPage("jobs")}
-          >
-            JOBS
-          </button>
-
           {user && user.role === "admin" && (
             <button
               className={page === "admin" ? "nav-link active" : "nav-link"}
@@ -46,6 +39,24 @@ function Header({ page, setPage, user, onLogout }) {
               onClick={() => setPage("profile")}
             >
               MY PROFILE
+            </button>
+          )}
+
+          {user && user.role === "user" && (
+            <button
+              className={page === "applications" ? "nav-link active" : "nav-link"}
+              onClick={() => setPage("applications")}
+            >
+              MY APPLICATIONS
+            </button>
+          )}
+
+          {user && user.role === "user" && (
+            <button
+              className={page === "favourites" ? "nav-link active" : "nav-link"}
+              onClick={() => setPage("favourites")}
+            >
+              MY FAVOURITES
             </button>
           )}
 

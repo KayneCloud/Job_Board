@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
+import JobDetails from "./JobDetails";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -67,6 +68,7 @@ function JobsSection({ token }) {
   const [form, setForm] = useState(emptyJob);
   const [editingId, setEditingId] = useState(null);
   const [page, setPage] = useState(1);
+  const [openId, setOpenId] = useState(null);
 
   function loadJobs() {
     fetch(API_URL + "/advertisements")
@@ -80,6 +82,10 @@ function JobsSection({ token }) {
       .then((res) => res.json())
       .then((data) => setCompanies(data));
   }, []);
+
+  function toggle(id) {
+    setOpenId(openId === id ? null : id);
+  }
 
   function handleChange(event) {
     setForm({ ...form, [event.target.name]: event.target.value });
@@ -224,16 +230,30 @@ function JobsSection({ token }) {
         </thead>
         <tbody>
           {visibleJobs.map((job) => (
-            <tr key={job.id}>
-              <td>{job.title}</td>
-              <td>{job.company_name}</td>
-              <td>{job.location}</td>
-              <td>{job.contract_type}</td>
-              <td className="admin-actions">
-                <button className="btn-outline" onClick={() => handleEdit(job)}>EDIT</button>
-                <button className="btn-primary" onClick={() => handleDelete(job.id)}>DELETE</button>
-              </td>
-            </tr>
+            <Fragment key={job.id}>
+              <tr>
+                <td>
+                  <button className="link-button" onClick={() => toggle(job.id)}>
+                    {job.title}
+                  </button>
+                </td>
+                <td>{job.company_name}</td>
+                <td>{job.location}</td>
+                <td>{job.contract_type}</td>
+                <td className="admin-actions">
+                  <button className="btn-outline" onClick={() => handleEdit(job)}>EDIT</button>
+                  <button className="btn-primary" onClick={() => handleDelete(job.id)}>DELETE</button>
+                </td>
+              </tr>
+
+              {openId === job.id && (
+                <tr className="details-row">
+                  <td colSpan="5">
+                    <JobDetails jobId={job.id} />
+                  </td>
+                </tr>
+              )}
+            </Fragment>
           ))}
         </tbody>
       </table>
@@ -385,6 +405,7 @@ function CompaniesSection({ token }) {
 function ApplicationsSection({ token }) {
   const [applications, setApplications] = useState([]);
   const [page, setPage] = useState(1);
+  const [openId, setOpenId] = useState(null);
 
   function loadApplications() {
     fetch(API_URL + "/applications", { headers: authHeaders(token) })
@@ -395,6 +416,10 @@ function ApplicationsSection({ token }) {
   useEffect(() => {
     loadApplications();
   }, []);
+
+  function toggle(id) {
+    setOpenId(openId === id ? null : id);
+  }
 
   function handleDelete(id) {
     if (!window.confirm("Delete this application?")) {
@@ -429,16 +454,30 @@ function ApplicationsSection({ token }) {
             </thead>
             <tbody>
               {visibleApplications.map((application) => (
-                <tr key={application.id}>
-                  <td>{application.ad_title}</td>
-                  <td>{application.name}</td>
-                  <td>{application.email}</td>
-                  <td>{application.message}</td>
-                  <td>{new Date(application.created_at).toLocaleDateString()}</td>
-                  <td className="admin-actions">
-                    <button className="btn-primary" onClick={() => handleDelete(application.id)}>DELETE</button>
-                  </td>
-                </tr>
+                <Fragment key={application.id}>
+                  <tr>
+                    <td>
+                      <button className="link-button" onClick={() => toggle(application.id)}>
+                        {application.ad_title}
+                      </button>
+                    </td>
+                    <td>{application.name}</td>
+                    <td>{application.email}</td>
+                    <td>{application.message}</td>
+                    <td>{new Date(application.created_at).toLocaleDateString()}</td>
+                    <td className="admin-actions">
+                      <button className="btn-primary" onClick={() => handleDelete(application.id)}>DELETE</button>
+                    </td>
+                  </tr>
+
+                  {openId === application.id && (
+                    <tr className="details-row">
+                      <td colSpan="6">
+                        <JobDetails jobId={application.ad_id} />
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
               ))}
             </tbody>
           </table>

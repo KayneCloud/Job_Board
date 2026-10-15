@@ -9,6 +9,8 @@ import Footer from "./components/Footer";
 import Admin from "./components/Admin";
 import Employer from "./components/Employer";
 import Profile from "./components/Profile";
+import MyApplications from "./components/MyApplications";
+import MyFavourites from "./components/MyFavourites";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -104,6 +106,8 @@ function App() {
     setPage("jobs");
   }
 
+  const isUser = user && user.role === "user";
+
   return (
     <div className="app">
       <Header page={page} setPage={setPage} user={user} onLogout={handleLogout} />
@@ -117,13 +121,12 @@ function App() {
 
         {page === "employer" && user && user.role === "employer" && <Employer user={user} />}
 
-        {page === "profile" && user && user.role === "user" && (
-          <Profile
-            user={user}
-            onUpdate={setUser}
-            favouriteJobs={favouriteJobs}
-            onToggleFavourite={toggleFavourite}
-          />
+        {page === "profile" && isUser && <Profile user={user} onUpdate={setUser} />}
+
+        {page === "applications" && isUser && <MyApplications user={user} />}
+
+        {page === "favourites" && isUser && (
+          <MyFavourites favouriteJobs={favouriteJobs} onToggleFavourite={toggleFavourite} />
         )}
 
         {page === "jobs" && (

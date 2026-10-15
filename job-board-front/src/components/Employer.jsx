@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
+import JobDetails from "./JobDetails";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -25,6 +26,7 @@ function Employer({ user }) {
   const [jobs, setJobs] = useState([]);
   const [form, setForm] = useState(emptyJob);
   const [editingId, setEditingId] = useState(null);
+  const [openDetailsId, setOpenDetailsId] = useState(null);
   const [openJobId, setOpenJobId] = useState(null);
   const [applications, setApplications] = useState([]);
   const [error, setError] = useState("");
@@ -44,6 +46,10 @@ function Employer({ user }) {
       .then((data) => setCompany(data));
     loadJobs();
   }, []);
+
+  function toggleDetails(id) {
+    setOpenDetailsId(openDetailsId === id ? null : id);
+  }
 
   function handleChange(event) {
     setForm({ ...form, [event.target.name]: event.target.value });
@@ -214,18 +220,32 @@ function Employer({ user }) {
             </thead>
             <tbody>
               {jobs.map((job) => (
-                <tr key={job.id}>
-                  <td>{job.title}</td>
-                  <td>{job.location}</td>
-                  <td>{job.contract_type}</td>
-                  <td className="admin-actions">
-                    <button className="btn-outline" onClick={() => handleShowApplications(job.id)}>
-                      {openJobId === job.id ? "HIDE" : "APPLICATIONS"}
-                    </button>
-                    <button className="btn-outline" onClick={() => handleEdit(job)}>EDIT</button>
-                    <button className="btn-primary" onClick={() => handleDelete(job.id)}>DELETE</button>
-                  </td>
-                </tr>
+                <Fragment key={job.id}>
+                  <tr>
+                    <td>
+                      <button className="link-button" onClick={() => toggleDetails(job.id)}>
+                        {job.title}
+                      </button>
+                    </td>
+                    <td>{job.location}</td>
+                    <td>{job.contract_type}</td>
+                    <td className="admin-actions">
+                      <button className="btn-outline" onClick={() => handleShowApplications(job.id)}>
+                        {openJobId === job.id ? "HIDE" : "APPLICATIONS"}
+                      </button>
+                      <button className="btn-outline" onClick={() => handleEdit(job)}>EDIT</button>
+                      <button className="btn-primary" onClick={() => handleDelete(job.id)}>DELETE</button>
+                    </td>
+                  </tr>
+
+                  {openDetailsId === job.id && (
+                    <tr className="details-row">
+                      <td colSpan="4">
+                        <JobDetails jobId={job.id} />
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
               ))}
             </tbody>
           </table>
