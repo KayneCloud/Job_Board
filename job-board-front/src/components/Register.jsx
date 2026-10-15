@@ -9,6 +9,7 @@ function Register({ onRegister, onGoToLogin }) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("user");
   const [error, setError] = useState("");
 
   function handleSubmit(event) {
@@ -23,6 +24,7 @@ function Register({ onRegister, onGoToLogin }) {
         email: email,
         phone: phone,
         password: password,
+        role: role,
       }),
     })
       .then((res) => {
@@ -38,6 +40,14 @@ function Register({ onRegister, onGoToLogin }) {
   return (
     <form className="form-card" onSubmit={handleSubmit}>
       <h1>Create an account</h1>
+
+      <label>
+        I am
+        <select value={role} onChange={(e) => setRole(e.target.value)}>
+          <option value="user">Looking for a job</option>
+          <option value="employer">Hiring (employer)</option>
+        </select>
+      </label>
 
       <label>
         First name

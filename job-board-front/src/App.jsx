@@ -8,6 +8,7 @@ import Filters from "./components/Filters";
 import Footer from "./components/Footer";
 import Admin from "./components/Admin";
 import Employer from "./components/Employer";
+import EmployerInfo from "./components/EmployerInfo";
 import Profile from "./components/Profile";
 import MyApplications from "./components/MyApplications";
 import MyFavourites from "./components/MyFavourites";
@@ -135,7 +136,7 @@ function App() {
     if (loggedUser.role === "admin") {
       setPage("admin");
     } else if (loggedUser.role === "employer") {
-      setPage("employer");
+      setPage(loggedUser.company_id ? "employer" : "employer-info");
     } else {
       setPage("jobs");
     }
@@ -148,6 +149,7 @@ function App() {
   }
 
   const isUser = user && user.role === "user";
+  const isEmployer = user && user.role === "employer";
 
   return (
     <div className="app">
@@ -160,7 +162,9 @@ function App() {
 
         {page === "admin" && user && user.role === "admin" && <Admin token={user.token} />}
 
-        {page === "employer" && user && user.role === "employer" && <Employer user={user} />}
+        {page === "employer" && isEmployer && user.company_id && <Employer user={user} />}
+
+        {page === "employer-info" && isEmployer && <EmployerInfo user={user} onUpdate={setUser} />}
 
         {page === "profile" && isUser && <Profile user={user} onUpdate={setUser} />}
 

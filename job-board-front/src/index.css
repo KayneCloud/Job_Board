@@ -703,6 +703,41 @@ textarea {
   font-size: 18px;
 }
 
+.employer-forms {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  align-items: start;
+  margin-top: 24px;
+}
+
+.employer-forms .form-card {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.company-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.company-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #FFFFFF;
+  border: 1.5px solid #E2CFA0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 14px;
+}
+
 @media (min-width: 900px) {
   .admin-section:has(> .admin-form) {
     display: grid;

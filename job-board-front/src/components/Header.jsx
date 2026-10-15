@@ -26,12 +26,21 @@ function Header({ page, setPage, user, onLogout }) {
 
           {user && user.role === "employer" && (
             <button
-              className={page === "employer" ? "nav-link active" : "nav-link"}
-              onClick={() => setPage("employer")}
+              className={page === "employer-info" ? "nav-link active" : "nav-link"}
+              onClick={() => setPage("employer-info")}
             >
-              MY COMPANY
+              MY INFORMATION
             </button>
           )}
+
+          {user && user.role === "employer" && user.company_id && (
+              <button
+                className={page === "employer" ? "nav-link active" : "nav-link"}
+                onClick={() => setPage("employer")}
+              >
+                MY JOBS
+              </button>
+            )}
 
           {user && user.role === "user" && (
             <button
