@@ -61,6 +61,7 @@ function Employer({ user }) {
 
   function handleSubmit(event) {
     event.preventDefault();
+    setError("");
 
     let url = API_URL + "/advertisements";
     let method = "POST";
@@ -73,14 +74,16 @@ function Employer({ user }) {
       method: method,
       headers: authHeaders(user.token),
       body: JSON.stringify({ ...form, company_id: user.company_id }),
-    }).then((res) => {
-      if (!res.ok) {
-        setError("Could not save this job.");
-        return;
-      }
-      resetForm();
-      loadJobs();
-    });
+    })
+      .then((res) => {
+        if (!res.ok) {
+          setError("Could not save this job. Please check the fields.");
+          return;
+        }
+        resetForm();
+        loadJobs();
+      })
+      .catch(() => setError("Server not available."));
   }
 
   function handleEdit(job) {
@@ -105,12 +108,18 @@ function Employer({ user }) {
     fetch(API_URL + "/advertisements/" + id, {
       method: "DELETE",
       headers: authHeaders(user.token),
-    }).then(() => {
-      if (openJobId === id) {
-        setOpenJobId(null);
-      }
-      loadJobs();
-    });
+    })
+      .then((res) => {
+        if (!res.ok) {
+          setError("Could not delete this job.");
+          return;
+        }
+        if (openJobId === id) {
+          setOpenJobId(null);
+        }
+        loadJobs();
+      })
+      .catch(() => setError("Server not available."));
   }
 
   function handleShowApplications(jobId) {
@@ -128,6 +137,8 @@ function Employer({ user }) {
       });
   }
 
+  const openJob = jobs.find((job) => job.id === openJobId);
+
   return (
     <section className="admin">
       <h1>{company ? company.name : "My jobs"}</h1>
@@ -135,142 +146,148 @@ function Employer({ user }) {
       <div className="admin-section">
         <h2 className="admin-section-title">My jobs</h2>
 
-        <form className="form-card admin-form" onSubmit={handleSubmit}>
-          <h2>{editingId ? "Edit job" : "Post a job"}</h2>
+        <div className="admin-layout">
+          <form className="form-card admin-form" onSubmit={handleSubmit}>
+            <h2>{editingId ? "Edit job" : "Post a job"}</h2>
 
-          <label>
-            Title
-            <input name="title" value={form.title} onChange={handleChange} required />
-          </label>
+            <label>
+              Title
+              <input name="title" value={form.title} onChange={handleChange} required />
+            </label>
 
-          <label>
-            Short description
-            <input name="short_description" value={form.short_description} onChange={handleChange} required />
-          </label>
+            <label>
+              Short description
+              <input name="short_description" value={form.short_description} onChange={handleChange} required />
+            </label>
 
-          <label>
-            Full description
-            <textarea name="full_description" value={form.full_description} onChange={handleChange} />
-          </label>
+            <label>
+              Full description
+              <textarea name="full_description" value={form.full_description} onChange={handleChange} />
+            </label>
 
-          <label>
-            Location
-            <input name="location" value={form.location} onChange={handleChange} />
-          </label>
+            <label>
+              Location
+              <input name="location" value={form.location} onChange={handleChange} />
+            </label>
 
-          <label>
-            Contract type
-            <input name="contract_type" value={form.contract_type} onChange={handleChange} placeholder="Full-time, Internship..." />
-          </label>
+            <label>
+              Contract type
+              <input name="contract_type" value={form.contract_type} onChange={handleChange} placeholder="Full-time, Internship..." />
+            </label>
 
-          <label>
-            Working time
-            <input name="working_time" value={form.working_time} onChange={handleChange} />
-          </label>
+            <label>
+              Working time
+              <input name="working_time" value={form.working_time} onChange={handleChange} />
+            </label>
 
-          <label>
-            Salary
-            <input name="salary" value={form.salary} onChange={handleChange} />
-          </label>
+            <label>
+              Salary
+              <input name="salary" value={form.salary} onChange={handleChange} />
+            </label>
 
-          <label>
-            Remote
-            <select name="remote" value={form.remote} onChange={handleChange}>
-              <option value="no">On site</option>
-              <option value="partial">Hybrid</option>
-              <option value="full">Remote</option>
-            </select>
-          </label>
+            <label>
+              Remote
+              <select name="remote" value={form.remote} onChange={handleChange}>
+                <option value="no">On site</option>
+                <option value="partial">Hybrid</option>
+                <option value="full">Remote</option>
+              </select>
+            </label>
 
-          {error && <p className="form-error">{error}</p>}
+            {error && <p className="form-error">{error}</p>}
 
-          <button type="submit" className="btn-primary">
-            {editingId ? "SAVE CHANGES" : "POST JOB"}
-          </button>
-
-          {editingId && (
-            <button type="button" className="btn-outline" onClick={resetForm}>
-              CANCEL
+            <button type="submit" className="btn-primary">
+              {editingId ? "SAVE CHANGES" : "POST JOB"}
             </button>
-          )}
-        </form>
 
-        {jobs.length === 0 && <p className="admin-empty">You have not posted any job yet.</p>}
+            {editingId && (
+              <button type="button" className="btn-outline" onClick={resetForm}>
+                CANCEL
+              </button>
+            )}
+          </form>
 
-        {jobs.length > 0 && (
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Location</th>
-                <th>Contract</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {jobs.map((job) => (
-                <Fragment key={job.id}>
+          <div className="admin-list">
+            {jobs.length === 0 && <p className="admin-empty">You have not posted any job yet.</p>}
+
+            {jobs.length > 0 && (
+              <table className="admin-table">
+                <thead>
                   <tr>
-                    <td>
-                      <span className="title-with-toggle">
-                        <Details open={openDetailsId === job.id} onClick={() => toggleDetails(job.id)} />
-                        {job.title}
-                      </span>
-                    </td>
-                    <td>{job.location}</td>
-                    <td>{job.contract_type}</td>
-                    <td className="admin-actions">
-                      <button className="btn-outline" onClick={() => handleShowApplications(job.id)}>
-                        {openJobId === job.id ? "HIDE" : "APPLICATIONS"}
-                      </button>
-                      <button className="btn-outline" onClick={() => handleEdit(job)}>EDIT</button>
-                      <button className="btn-primary" onClick={() => handleDelete(job.id)}>DELETE</button>
-                    </td>
+                    <th>Title</th>
+                    <th>Location</th>
+                    <th>Contract</th>
+                    <th>Actions</th>
                   </tr>
+                </thead>
+                <tbody>
+                  {jobs.map((job) => (
+                    <Fragment key={job.id}>
+                      <tr>
+                        <td>
+                          <span className="title-with-toggle">
+                            <Details open={openDetailsId === job.id} onClick={() => toggleDetails(job.id)} />
+                            {job.title}
+                          </span>
+                        </td>
+                        <td>{job.location}</td>
+                        <td>{job.contract_type}</td>
+                        <td className="admin-actions">
+                          <button className="btn-outline" onClick={() => handleShowApplications(job.id)}>
+                            {openJobId === job.id ? "HIDE" : "APPLICATIONS"}
+                          </button>
+                          <button className="btn-outline" onClick={() => handleEdit(job)}>EDIT</button>
+                          <button className="btn-primary" onClick={() => handleDelete(job.id)}>DELETE</button>
+                        </td>
+                      </tr>
 
-                  {openDetailsId === job.id && (
-                    <tr className="details-row">
-                      <td colSpan="4">
-                        <JobDetails jobId={job.id} />
-                      </td>
-                    </tr>
-                  )}
-                </Fragment>
-              ))}
-            </tbody>
-          </table>
-        )}
+                      {openDetailsId === job.id && (
+                        <tr className="details-row">
+                          <td colSpan="4">
+                            <JobDetails jobId={job.id} />
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
       </div>
 
-      {openJobId && (
+      {openJob && (
         <div className="admin-section">
-          <h2 className="admin-section-title">Applications</h2>
+          <h2 className="admin-section-title">Applications for {openJob.title}</h2>
 
           {applications.length === 0 && <p className="admin-empty">No applications for this job yet.</p>}
 
           {applications.length > 0 && (
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Message</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {applications.map((application) => (
-                  <tr key={application.id}>
-                    <td>{application.name}</td>
-                    <td>{application.email}</td>
-                    <td>{application.phone}</td>
-                    <td>{application.message}</td>
-                    <td>{new Date(application.created_at).toLocaleDateString()}</td>
+            <div className="admin-list admin-list-full">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Message</th>
+                    <th>Date</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {applications.map((application) => (
+                    <tr key={application.id}>
+                      <td>{application.name}</td>
+                      <td>{application.email}</td>
+                      <td>{application.phone}</td>
+                      <td>{application.message}</td>
+                      <td>{new Date(application.created_at).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}
