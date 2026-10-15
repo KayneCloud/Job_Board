@@ -142,6 +142,12 @@ function App() {
     }
   }
 
+  function handleRegister(newUser) {
+    localStorage.setItem("token", newUser.token);
+    setUser(newUser);
+    setPage("jobs");
+  }
+
   function handleLogout() {
     localStorage.removeItem("token");
     setUser(null);
@@ -158,7 +164,7 @@ function App() {
       <main className="main">
         {page === "login" && <Login onLogin={handleLogin} onGoToRegister={() => setPage("register")} />}
 
-        {page === "register" && <Register onRegister={handleLogin} onGoToLogin={() => setPage("login")} />}
+        {page === "register" && <Register onRegister={handleRegister} onGoToLogin={() => setPage("login")} />}
 
         {page === "admin" && user && user.role === "admin" && <Admin token={user.token} />}
 

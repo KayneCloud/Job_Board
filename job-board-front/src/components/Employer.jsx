@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useState } from "react";
 import JobDetails from "./JobDetails";
+import Details from "./Details";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -21,7 +22,7 @@ function authHeaders(token) {
   };
 }
 
-function Employer({ user, onGoToInfo }) {
+function Employer({ user }) {
   const [company, setCompany] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [form, setForm] = useState(emptyJob);
@@ -38,15 +39,6 @@ function Employer({ user, onGoToInfo }) {
   }
 
   useEffect(() => {
-      if (!user.company_id) {
-    return (
-      <section className="admin">
-        <h1>My jobs</h1>
-        <p className="admin-empty">Add your company before posting jobs.</p>
-        <button className="btn-primary" onClick={onGoToInfo}>ADD MY COMPANY</button>
-      </section>
-    );
-  }
     fetch(API_URL + "/companies/" + user.company_id)
       .then((res) => res.json())
       .then((data) => setCompany(data));
@@ -136,18 +128,9 @@ function Employer({ user, onGoToInfo }) {
       });
   }
 
-  if (!user.company_id) {
-    return (
-      <section className="admin">
-        <h1>My company</h1>
-        <p className="admin-empty">Your account is not linked to a company yet. Please ask an admin.</p>
-      </section>
-    );
-  }
-
   return (
     <section className="admin">
-      <h1>{company ? company.name : "My company"}</h1>
+      <h1>{company ? company.name : "My jobs"}</h1>
 
       <div className="admin-section">
         <h2 className="admin-section-title">My jobs</h2>
@@ -229,9 +212,10 @@ function Employer({ user, onGoToInfo }) {
                 <Fragment key={job.id}>
                   <tr>
                     <td>
-                      <button className="link-button" onClick={() => toggleDetails(job.id)}>
+                      <span className="title-with-toggle">
+                        <Details open={openDetailsId === job.id} onClick={() => toggleDetails(job.id)} />
                         {job.title}
-                      </button>
+                      </span>
                     </td>
                     <td>{job.location}</td>
                     <td>{job.contract_type}</td>

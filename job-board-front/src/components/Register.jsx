@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { login } from "../Auth";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -10,31 +10,83 @@ function Register({ onRegister, onGoToLogin }) {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
+  const [companies, setCompanies] = useState([]);
+  const [search, setSearch] = useState("");
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [creating, setCreating] = useState(false);
+  const [newCompany, setNewCompany] = useState({ name: "", sector: "", city: "" });
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch(API_URL + "/companies")
+      .then((res) => res.json())
+      .then((data) => setCompanies(data));
+  }, []);
+
+  const results =
+    search.length >= 2
+      ? companies.filter((c) => c.name.toLowerCase().includes(search.toLowerCase())).slice(0, 5)
+      : [];
+
+  function handleSelect(company) {
+    setSelectedCompany(company);
+    setSearch("");
+  }
+
+  function handleStartCreate() {
+    setNewCompany({ name: search, sector: "", city: "" });
+    setCreating(true);
+  }
+
+  function handleBackToSearch() {
+    setCreating(false);
+    setSelectedCompany(null);
+  }
+
+  function handleNewCompanyChange(event) {
+    setNewCompany({ ...newCompany, [event.target.name]: event.target.value });
+  }
 
   function handleSubmit(event) {
     event.preventDefault();
+    setError("");
+
+    const body = {
+      first_name: firstName,
+      last_name: lastName,
+      email: email,
+      phone: phone,
+      password: password,
+      role: role,
+    };
+
+    if (role === "employer") {
+      if (creating) {
+        body.new_company = newCompany;
+      } else if (selectedCompany) {
+        body.company_id = selectedCompany.id;
+      } else {
+        setError("Please find your company, or create it.");
+        return;
+      }
+    }
 
     fetch(API_URL + "/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        first_name: firstName,
-        last_name: lastName,
-        email: email,
-        phone: phone,
-        password: password,
-        role: role,
-      }),
+      body: JSON.stringify(body),
     })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error();
+      .then((res) => res.json().then((data) => ({ ok: res.ok, data: data })))
+      .then((result) => {
+        if (!result.ok) {
+          setError(result.data.error || "Could not create account.");
+          return;
         }
-        return login(email, password);
+        return login(email, password)
+          .then((user) => onRegister(user))
+          .catch(() => setError("Account created, but automatic sign in failed. Please sign in."));
       })
-      .then((user) => onRegister(user))
-      .catch(() => setError("Could not create account. This email may already be used."));
+      .catch(() => setError("Server not available. Please try again later."));
   }
 
   return (
@@ -48,6 +100,77 @@ function Register({ onRegister, onGoToLogin }) {
           <option value="employer">Hiring (employer)</option>
         </select>
       </label>
+
+      {role === "employer" && !creating && !selectedCompany && (
+        <>
+          <label>
+            My company
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Type your company name..."
+            />
+          </label>
+
+          {results.length > 0 && (
+            <ul className="company-results">
+              {results.map((c) => (
+                <li key={c.id}>
+                  <button type="button" className="company-result" onClick={() => handleSelect(c)}>
+                    <strong>{c.name}</strong>
+                    {c.city && <span>{c.city}</span>}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {search.length >= 2 && results.length === 0 && (
+            <p className="form-switch">
+              No company found.{" "}
+              <button type="button" className="link-button" onClick={handleStartCreate}>
+                Create "{search}"
+              </button>
+            </p>
+          )}
+        </>
+      )}
+
+      {role === "employer" && selectedCompany && (
+        <p className="company-selected">
+          <span>
+            Company: <strong>{selectedCompany.name}</strong>
+          </span>
+          <button type="button" className="link-button" onClick={handleBackToSearch}>
+            Change
+          </button>
+        </p>
+      )}
+
+      {role === "employer" && creating && (
+        <>
+          <label>
+            Company name
+            <input name="name" value={newCompany.name} onChange={handleNewCompanyChange} required />
+          </label>
+
+          <label>
+            Sector
+            <input name="sector" value={newCompany.sector} onChange={handleNewCompanyChange} />
+          </label>
+
+          <label>
+            City
+            <input name="city" value={newCompany.city} onChange={handleNewCompanyChange} />
+          </label>
+
+          <p className="form-switch">
+            <button type="button" className="link-button" onClick={handleBackToSearch}>
+              Back to search
+            </button>
+          </p>
+        </>
+      )}
 
       <label>
         First name

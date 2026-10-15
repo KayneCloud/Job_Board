@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useState } from "react";
 import JobDetails from "./JobDetails";
+import Details from "./Details";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -55,9 +56,10 @@ function MyApplications({ user }) {
               <Fragment key={application.id}>
                 <tr>
                   <td>
-                    <button className="link-button" onClick={() => toggle(application.id)}>
+                    <span className="title-with-toggle">
+                      <Details open={openId === application.id} onClick={() => toggle(application.id)} />
                       {application.ad_title}
-                    </button>
+                    </span>
                   </td>
                   <td>{application.company_name}</td>
                   <td>{application.message}</td>

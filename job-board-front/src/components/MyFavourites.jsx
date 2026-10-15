@@ -1,5 +1,6 @@
 import { Fragment, useState } from "react";
 import JobDetails from "./JobDetails";
+import Details from "./Details";
 
 function MyFavourites({ favouriteJobs, onToggleFavourite }) {
   const [openId, setOpenId] = useState(null);
@@ -32,9 +33,10 @@ function MyFavourites({ favouriteJobs, onToggleFavourite }) {
               <Fragment key={job.id}>
                 <tr>
                   <td>
-                    <button className="link-button" onClick={() => toggle(job.id)}>
+                    <span className="title-with-toggle">
+                      <Details open={openId === job.id} onClick={() => toggle(job.id)} />
                       {job.title}
-                    </button>
+                    </span>
                   </td>
                   <td>{job.company_name}</td>
                   <td>{job.location}</td>

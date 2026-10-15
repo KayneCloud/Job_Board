@@ -134,6 +134,7 @@ textarea {
   color: var(--cream);
 }
 
+.btn-outline:disabled,
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: default;
@@ -148,6 +149,49 @@ textarea {
   color: var(--sauce);
   text-decoration: underline;
   cursor: pointer;
+}
+
+.save-button {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid #E2CFA0;
+  background: transparent;
+  color: var(--sauce-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.save-button.active {
+  background: var(--cream);
+  border-color: var(--sauce);
+  color: var(--sauce);
+}
+
+.toggle-button {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1.5px solid #E2CFA0;
+  background: #FFFFFF;
+  color: var(--sauce);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.toggle-button svg {
+  transition: transform 0.2s;
+}
+
+.toggle-button.open svg {
+  transform: rotate(180deg);
 }
 
 .hero {
@@ -389,26 +433,6 @@ textarea {
   font-size: 13px;
 }
 
-.save-button {
-  flex: 0 0 auto;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1.5px solid #E2CFA0;
-  background: transparent;
-  color: var(--sauce-dark);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.save-button.active {
-  background: var(--cream);
-  border-color: var(--sauce);
-  color: var(--sauce);
-}
-
 .job-short {
   margin: 0;
   font-size: 14px;
@@ -586,6 +610,66 @@ textarea {
   color: var(--muted);
 }
 
+.company-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.company-result {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: #FFFFFF;
+  border: 1.5px solid #E2CFA0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.company-result:hover {
+  border-color: var(--sauce);
+}
+
+.company-result span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.company-selected {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: var(--cream);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 14px;
+}
+
+.employer-forms {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  align-items: start;
+  margin-top: 24px;
+}
+
+.employer-forms .form-card {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
 .admin {
   box-sizing: border-box;
   width: 100%;
@@ -618,6 +702,15 @@ textarea {
   margin: 24px 0;
 }
 
+.admin-empty {
+  margin: 24px 0;
+  background: var(--plate);
+  border-radius: 22px;
+  padding: 24px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
 .admin-table {
   width: 100%;
   border-collapse: collapse;
@@ -642,8 +735,16 @@ textarea {
   border-top: 1.5px solid #E2CFA0;
 }
 
-.admin-table .link-button {
-  text-align: left;
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.title-with-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .details-row td {
@@ -657,21 +758,6 @@ textarea {
   padding-top: 4px;
 }
 
-.admin-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.admin-empty {
-  margin: 24px 0;
-  background: var(--plate);
-  border-radius: 22px;
-  padding: 24px;
-  color: var(--muted);
-  font-weight: 500;
-}
-
 .pagination {
   display: flex;
   align-items: center;
@@ -679,11 +765,6 @@ textarea {
   gap: 14px;
   margin-top: 14px;
   font-weight: 600;
-}
-
-.pagination button:disabled {
-  opacity: 0.4;
-  cursor: default;
 }
 
 .footer {
@@ -701,41 +782,6 @@ textarea {
 .footer-name {
   font-weight: 800;
   font-size: 18px;
-}
-
-.employer-forms {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 24px;
-  align-items: start;
-  margin-top: 24px;
-}
-
-.employer-forms .form-card {
-  width: 100%;
-  max-width: none;
-  margin: 0;
-}
-
-.company-results {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.company-result {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: #FFFFFF;
-  border: 1.5px solid #E2CFA0;
-  border-radius: 12px;
-  padding: 10px 14px;
-  font-size: 14px;
 }
 
 @media (min-width: 900px) {
