@@ -186,8 +186,12 @@ def create_company():
 
 # replace all the info of a company (404 if not found)
 @app.route("/api/companies/<int:company_id>", methods=["PUT"])
-@admin_required
+@employer_required
 def update_company(company_id):
+        # employer can edit their own company
+    if g.user["role"] == "employer" and g.user["company_id"] != company_id:
+        return jsonify({"error": "You can only edit your own company"}), 403
+    
     data=request.get_json()
 
     if not data or not data.get("name"):
