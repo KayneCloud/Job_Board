@@ -1,12 +1,7 @@
 import { useEffect, useState } from "react";
+import { remoteLabels } from "../labels";
 
 const API_URL = import.meta.env.VITE_API_URL;
-
-export const remoteLabels = {
-  no: "On site",
-  partial: "Hybrid",
-  full: "Remote",
-};
 
 function JobDetails({ jobId }) {
   const [job, setJob] = useState(null);

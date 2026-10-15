@@ -15,12 +15,21 @@ import MyFavourites from "./components/MyFavourites";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+function getStartPage() {
+  const savedPage = localStorage.getItem("page") || "jobs";
+  const token = localStorage.getItem("token");
+  if (!token && savedPage !== "login" && savedPage !== "register") {
+    return "jobs";
+  }
+  return savedPage;
+}
+
 function App() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [user, setUser] = useState(null);
-  const [page, setPage] = useState(localStorage.getItem("page") || "jobs");
+  const [page, setPage] = useState(getStartPage);
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("");
   const [type, setType] = useState("All");
@@ -34,9 +43,6 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      if (page !== "login" && page !== "register") {
-        setPage("jobs");
-      }
       return;
     }
 
@@ -57,9 +63,6 @@ function App() {
   }, []);
 
   useEffect(() => {
-    setLoading(true);
-    setError("");
-
     fetch(API_URL + "/advertisements")
       .then((res) => {
         if (!res.ok) {
@@ -67,15 +70,16 @@ function App() {
         }
         return res.json();
       })
-      .then((data) => setJobs(data))
+      .then((data) => {
+        setJobs(data);
+        setError("");
+      })
       .catch(() => setError("Could not load jobs. Please try again later."))
       .finally(() => setLoading(false));
   }, [page]);
 
   useEffect(() => {
     if (!user || user.role !== "user") {
-      setFavouriteIds([]);
-      setAppliedIds([]);
       return;
     }
 
@@ -151,6 +155,8 @@ function App() {
   function handleLogout() {
     localStorage.removeItem("token");
     setUser(null);
+    setFavouriteIds([]);
+    setAppliedIds([]);
     setPage("jobs");
   }
 

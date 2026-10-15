@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ApplyForm from "./ApplyForm";
-import JobDetails, { remoteLabels } from "./JobDetails";
+import JobDetails from "./JobDetails";
+import { remoteLabels } from "../labels";
 
 function getInitials(name) {
   return name

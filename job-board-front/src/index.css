@@ -213,7 +213,7 @@ textarea {
   margin: 40px auto 24px;
   padding: 0 24px;
   display: grid;
-  grid-template-columns: 7fr 5fr;
+  grid-template-columns: 1fr;
 }
 
 .hero-text {
@@ -841,34 +841,7 @@ textarea {
   font-weight: 800;
 }
 
-@media (min-width: 900px) {
-  .admin-form {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-content: start;
-    column-gap: 12px;
-  }
-
-  .admin-form h2,
-  .admin-form label:has(textarea),
-  .admin-form .form-error,
-  .admin-form .btn-primary,
-  .admin-form .btn-outline {
-    grid-column: 1 / -1;
-  }
-}
-
-@media (max-width: 800px) {
-  .hero {
-    grid-template-columns: 1fr;
-  }
-
-  .hero-title {
-    font-size: 40px;
-  }
-}
-
-@media (max-width: 700px) {
+@media (max-width: 767px) {
   .menu-button {
     display: flex;
   }
@@ -891,6 +864,10 @@ textarea {
 
   .hero-text {
     padding: 32px 22px;
+  }
+
+  .hero-title {
+    font-size: 40px;
   }
 
   .search {
@@ -920,10 +897,49 @@ textarea {
   .filters-select {
     display: flex;
   }
-}
 
-@media (max-width: 500px) {
   .job-list {
     grid-template-columns: 1fr;
+  }
+
+  .hero-photo img {
+    aspect-ratio: 4 / 3;
+    object-position: center 15%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .hero-title {
+    font-size: 48px;
+  }
+
+  .job-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hero-photo img {
+    aspect-ratio: 16 / 9;
+    object-position: center 15%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero {
+    grid-template-columns: 7fr 5fr;
+  }
+
+  .admin-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-content: start;
+    column-gap: 12px;
+  }
+
+  .admin-form h2,
+  .admin-form label:has(textarea),
+  .admin-form .form-error,
+  .admin-form .btn-primary,
+  .admin-form .btn-outline {
+    grid-column: 1 / -1;
   }
 }
