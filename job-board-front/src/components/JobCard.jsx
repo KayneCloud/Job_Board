@@ -61,7 +61,7 @@ function JobCard({ job, user, isFavourite, onToggleFavourite, hasApplied, onAppl
           {showDetails ? "SHOW LESS" : "LEARN MORE"}
         </button>
 
-        {hasApplied && !showForm ? (
+        {hasApplied ? (
           <button className="btn-primary" disabled>
             APPLIED
           </button>
