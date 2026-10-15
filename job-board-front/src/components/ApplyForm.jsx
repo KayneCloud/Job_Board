@@ -2,7 +2,7 @@ import { useState } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-function ApplyForm({ jobId, user }) {
+function ApplyForm({ jobId, user, onApplied }) {
   const [name, setName] = useState(user ? user.first_name + " " + user.last_name : "");
   const [email, setEmail] = useState(user ? user.email : "");
   const [phone, setPhone] = useState(user ? user.phone : "");
@@ -30,6 +30,11 @@ function ApplyForm({ jobId, user }) {
     }).then((res) => {
       if (res.ok) {
         setSent(true);
+        if (user) {
+          onApplied();
+        }
+      } else if (res.status === 409) {
+        setError("You have already applied to this job.");
       } else {
         setError("Could not send your application");
       }

@@ -11,7 +11,7 @@ function getInitials(name) {
     .toUpperCase();
 }
 
-function JobCard({ job, user, isFavourite, onToggleFavourite }) {
+function JobCard({ job, user, isFavourite, onToggleFavourite, hasApplied, onApplied }) {
   const [showDetails, setShowDetails] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
@@ -60,14 +60,21 @@ function JobCard({ job, user, isFavourite, onToggleFavourite }) {
         <button className="btn-outline" onClick={() => setShowDetails(!showDetails)}>
           {showDetails ? "SHOW LESS" : "LEARN MORE"}
         </button>
-        <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
-          APPLY
-        </button>
+
+        {hasApplied && !showForm ? (
+          <button className="btn-primary" disabled>
+            APPLIED
+          </button>
+        ) : (
+          <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
+            APPLY
+          </button>
+        )}
       </div>
 
       {showDetails && <JobDetails jobId={job.id} />}
 
-      {showForm && <ApplyForm jobId={job.id} user={user} />}
+      {showForm && <ApplyForm jobId={job.id} user={user} onApplied={onApplied} />}
     </article>
   );
 }

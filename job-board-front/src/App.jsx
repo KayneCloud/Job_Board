@@ -19,11 +19,41 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [user, setUser] = useState(null);
-  const [page, setPage] = useState("jobs");
+  const [page, setPage] = useState(localStorage.getItem("page") || "jobs");
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("");
   const [type, setType] = useState("All");
   const [favouriteIds, setFavouriteIds] = useState([]);
+  const [appliedIds, setAppliedIds] = useState([]);
+
+  useEffect(() => {
+    localStorage.setItem("page", page);
+  }, [page]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      if (page !== "login" && page !== "register") {
+        setPage("jobs");
+      }
+      return;
+    }
+
+    fetch(API_URL + "/auth/me", {
+      headers: { Authorization: "Bearer " + token },
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error();
+        }
+        return res.json();
+      })
+      .then((data) => setUser({ ...data, token: token }))
+      .catch(() => {
+        localStorage.removeItem("token");
+        setPage("jobs");
+      });
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -44,14 +74,19 @@ function App() {
   useEffect(() => {
     if (!user || user.role !== "user") {
       setFavouriteIds([]);
+      setAppliedIds([]);
       return;
     }
 
-    fetch(API_URL + "/me/favourites", {
-      headers: { Authorization: "Bearer " + user.token },
-    })
+    const headers = { Authorization: "Bearer " + user.token };
+
+    fetch(API_URL + "/me/favourites", { headers: headers })
       .then((res) => res.json())
       .then((data) => setFavouriteIds(data.map((job) => job.id)));
+
+    fetch(API_URL + "/me/applications", { headers: headers })
+      .then((res) => res.json())
+      .then((data) => setAppliedIds(data.map((application) => application.ad_id)));
   }, [user]);
 
   function toggleFavourite(jobId) {
@@ -70,6 +105,10 @@ function App() {
         setFavouriteIds([...favouriteIds, jobId]);
       }
     });
+  }
+
+  function markApplied(jobId) {
+    setAppliedIds([...appliedIds, jobId]);
   }
 
   const types = ["All", ...new Set(jobs.map((job) => job.contract_type).filter((t) => t))];
@@ -91,6 +130,7 @@ function App() {
   }
 
   function handleLogin(loggedUser) {
+    localStorage.setItem("token", loggedUser.token);
     setUser(loggedUser);
     if (loggedUser.role === "admin") {
       setPage("admin");
@@ -102,6 +142,7 @@ function App() {
   }
 
   function handleLogout() {
+    localStorage.removeItem("token");
     setUser(null);
     setPage("jobs");
   }
@@ -152,6 +193,8 @@ function App() {
                   user={user}
                   isFavourite={favouriteIds.includes(job.id)}
                   onToggleFavourite={() => toggleFavourite(job.id)}
+                  hasApplied={appliedIds.includes(job.id)}
+                  onApplied={() => markApplied(job.id)}
                 />
               ))}
             </section>
