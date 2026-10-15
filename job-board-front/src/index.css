@@ -111,6 +111,20 @@ textarea {
   border-color: var(--cream);
 }
 
+.menu-button {
+  display: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 2px solid var(--cream);
+  border-radius: 12px;
+  background: none;
+  color: var(--cream);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
 .btn-outline,
 .btn-primary {
   min-height: 40px;
@@ -330,6 +344,38 @@ textarea {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   cursor: pointer;
+}
+
+.filters-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.filters-select {
+  display: none;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  padding-left: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.filters-select select {
+  flex: 1;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1.5px solid #E2CFA0;
+  border-radius: 999px;
+  background: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  outline: none;
 }
 
 .job-list {
@@ -824,6 +870,58 @@ textarea {
 }
 
 @media (max-width: 700px) {
+  .menu-button {
+    display: flex;
+  }
+
+  .nav {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    padding-top: 8px;
+  }
+
+  .nav.open {
+    display: flex;
+  }
+
+  .nav-link {
+    width: 100%;
+    text-align: left;
+  }
+
+  .hero-text {
+    padding: 32px 22px;
+  }
+
+  .search {
+    flex-direction: column;
+    border-radius: 22px;
+  }
+
+  .search-input {
+    flex: none;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .search-where {
+    border-left: 0;
+    border-top: 1.5px solid #E2CFA0;
+  }
+
+  .search-button {
+    width: 100%;
+  }
+
+  .filters-buttons {
+    display: none;
+  }
+
+  .filters-select {
+    display: flex;
+  }
+
   .admin-table {
     display: block;
     overflow-x: auto;

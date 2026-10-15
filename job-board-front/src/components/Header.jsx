@@ -1,8 +1,22 @@
+import { useState } from "react";
+
 function Header({ page, setPage, user, onLogout }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  function goTo(newPage) {
+    setPage(newPage);
+    setMenuOpen(false);
+  }
+
+  function handleLogout() {
+    onLogout();
+    setMenuOpen(false);
+  }
+
   return (
     <header className="header">
       <div className="header-inner">
-        <button className="logo" onClick={() => setPage("jobs")}>
+        <button className="logo" onClick={() => goTo("jobs")}>
           <span className="logo-tomato">
             <svg width="28" height="28" viewBox="0 0 36 36" aria-hidden="true">
               <circle cx="18" cy="20" r="13" fill="#B3161B" />
@@ -14,11 +28,26 @@ function Header({ page, setPage, user, onLogout }) {
           <span className="logo-name">CHEFS.DEV</span>
         </button>
 
-        <nav className="nav">
+        <button
+          className="menu-button"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={menuOpen}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+            {menuOpen ? (
+              <path d="M6 6l12 12M18 6L6 18" />
+            ) : (
+              <path d="M4 7h16M4 12h16M4 17h16" />
+            )}
+          </svg>
+        </button>
+
+        <nav className={menuOpen ? "nav open" : "nav"}>
           {user && user.role === "admin" && (
             <button
               className={page === "admin" ? "nav-link active" : "nav-link"}
-              onClick={() => setPage("admin")}
+              onClick={() => goTo("admin")}
             >
               ADMIN
             </button>
@@ -27,25 +56,25 @@ function Header({ page, setPage, user, onLogout }) {
           {user && user.role === "employer" && (
             <button
               className={page === "employer-info" ? "nav-link active" : "nav-link"}
-              onClick={() => setPage("employer-info")}
+              onClick={() => goTo("employer-info")}
             >
               MY INFORMATION
             </button>
           )}
 
           {user && user.role === "employer" && user.company_id && (
-              <button
-                className={page === "employer" ? "nav-link active" : "nav-link"}
-                onClick={() => setPage("employer")}
-              >
-                MY JOBS
-              </button>
-            )}
+            <button
+              className={page === "employer" ? "nav-link active" : "nav-link"}
+              onClick={() => goTo("employer")}
+            >
+              MY JOBS
+            </button>
+          )}
 
           {user && user.role === "user" && (
             <button
               className={page === "profile" ? "nav-link active" : "nav-link"}
-              onClick={() => setPage("profile")}
+              onClick={() => goTo("profile")}
             >
               MY PROFILE
             </button>
@@ -54,7 +83,7 @@ function Header({ page, setPage, user, onLogout }) {
           {user && user.role === "user" && (
             <button
               className={page === "applications" ? "nav-link active" : "nav-link"}
-              onClick={() => setPage("applications")}
+              onClick={() => goTo("applications")}
             >
               MY APPLICATIONS
             </button>
@@ -63,14 +92,14 @@ function Header({ page, setPage, user, onLogout }) {
           {user && user.role === "user" && (
             <button
               className={page === "favourites" ? "nav-link active" : "nav-link"}
-              onClick={() => setPage("favourites")}
+              onClick={() => goTo("favourites")}
             >
               MY FAVOURITES
             </button>
           )}
 
           {user && (
-            <button className="nav-link outline" onClick={onLogout}>
+            <button className="nav-link outline" onClick={handleLogout}>
               LOG OUT
             </button>
           )}
@@ -78,7 +107,7 @@ function Header({ page, setPage, user, onLogout }) {
           {!user && (
             <button
               className={page === "login" || page === "register" ? "nav-link outline active" : "nav-link outline"}
-              onClick={() => setPage("login")}
+              onClick={() => goTo("login")}
             >
               SIGN IN
             </button>
