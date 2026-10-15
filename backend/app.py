@@ -404,9 +404,9 @@ def create_application(ad_id):
     try:
         with conn.cursor() as cursor:
 
-            cursor.execute("SELECT id FROM advertisements WHERE id=%s", (ad_id,))
+            cursor.execute("""SELECT id FROM advertisements WHERE id=%s AND (person_id=%s OR email=%s)""", (ad_id, person_id, data["email"]),)
             if cursor.fetchone() is None:
-                return jsonify({"error": "Advertisement not found"}), 404
+                return jsonify({"error": "You have already applied to this job"}), 409
 
             cursor.execute(
                 """INSERT INTO applications (ad_id, person_id, name, email, phone, message)
@@ -657,9 +657,10 @@ def get_person(person_id):
     return jsonify(person), 200
 
 # create an account, password is hashed, role only "user" or "employer"
+# employer must join a company or create one.
 @app.route("/api/auth/signup", methods=["POST"])
 def signup():
-    data=request.get_json()
+    data = request.get_json()
 
     required = ["first_name", "last_name", "email", "password"]
     if not data or not all(data.get(field) for field in required):
@@ -669,25 +670,58 @@ def signup():
     if role not in ("user", "employer"):
         return jsonify({"error": "role must be 'user' or 'employer'"}), 400
 
+    company_id = data.get("company_id")
+    new_company = data.get("new_company")
+
+    if role == "employer":
+        if company_id and new_company:
+            return jsonify({"error": "Choose either company_id (join) or new_company (create), not both"}), 400
+        if not company_id and not new_company:
+            return jsonify({"error": "An employer must join a company (company_id) or create one (new_company)"}), 400
+        if new_company and not new_company.get("name"):
+            return jsonify({"error": "new_company needs a name"}), 400
+    else:
+        # a normal user has no company
+        company_id = None
+        new_company = None
+
     password_hash = generate_password_hash(data["password"])
 
     conn = get_db()
     try:
         with conn.cursor() as cursor:
+            # 1. Is the email already used?
             cursor.execute("SELECT id FROM people WHERE email=%s", (data["email"],))
             if cursor.fetchone() is not None:
                 return jsonify({"error": "This email is already used"}), 409
 
+            # 2. If asked, create the new company first
+            if new_company:
+                cursor.execute(
+                    """INSERT INTO companies (name, sector, city, website, description)
+                       VALUES (%s, %s, %s, %s, %s)""",
+                    (
+                        new_company["name"],
+                        new_company.get("sector"),
+                        new_company.get("city"),
+                        new_company.get("website"),
+                        new_company.get("description"),
+                    ),
+                )
+                company_id = cursor.lastrowid
+
+            # 3. Create the person, linked to the company (or None)
             cursor.execute(
                 """INSERT INTO people (first_name, last_name, email, phone, password_hash, role, company_id)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)""",
-                (data["first_name"],
-                data["last_name"],
-                data["email"],
-                data.get("phone"),
-                password_hash,
-                role,
-                data.get("company_id") 
+                   VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+                (
+                    data["first_name"],
+                    data["last_name"],
+                    data["email"],
+                    data.get("phone"),
+                    password_hash,
+                    role,
+                    company_id,
                 ),
             )
             conn.commit()
@@ -697,7 +731,7 @@ def signup():
     finally:
         conn.close()
 
-    return jsonify({"id": new_id, "message": "Account created"}), 201
+    return jsonify({"id": new_id, "company_id": company_id, "message": "Account created"}), 201
 
 # check email + password, return a token and the role
 @app.route("/api/auth/login", methods=["POST"])
