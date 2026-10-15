@@ -390,7 +390,7 @@ def delete_advertisement(ad_id):
     return jsonify({"message": "Advertisement deleted"}), 200
 
 # 8. APPLICATION SECTION ===========================================
-# apply to an ad
+# apply to an ad (only once per person or per email)
 @app.route("/api/advertisements/<int:ad_id>/applications", methods=["POST"])
 def create_application(ad_id):
     data = request.get_json()
@@ -403,11 +403,21 @@ def create_application(ad_id):
     conn = get_db()
     try:
         with conn.cursor() as cursor:
-
-            cursor.execute("""SELECT id FROM advertisements WHERE id=%s AND (person_id=%s OR email=%s)""", (ad_id, person_id, data["email"]),)
+            # 1. Does the ad exist?
+            cursor.execute("SELECT id FROM advertisements WHERE id=%s", (ad_id,))
             if cursor.fetchone() is None:
+                return jsonify({"error": "Advertisement not found"}), 404
+
+            # 2. Has this person (or this email) already applied to this ad?
+            cursor.execute(
+                """SELECT id FROM applications
+                   WHERE ad_id=%s AND (person_id=%s OR email=%s)""",
+                (ad_id, person_id, data["email"]),
+            )
+            if cursor.fetchone() is not None:
                 return jsonify({"error": "You have already applied to this job"}), 409
 
+            # 3. Save the application
             cursor.execute(
                 """INSERT INTO applications (ad_id, person_id, name, email, phone, message)
                    VALUES (%s, %s, %s, %s, %s, %s)""",

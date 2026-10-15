@@ -41,7 +41,7 @@ function authHeaders(token) {
   };
 }
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 9;
 
 function Pagination({ page, total, onChange }) {
   const pageCount = Math.ceil(total / PAGE_SIZE);
@@ -70,6 +70,7 @@ function JobsSection({ token }) {
   const [editingId, setEditingId] = useState(null);
   const [page, setPage] = useState(1);
   const [openId, setOpenId] = useState(null);
+  const [error, setError] = useState("");
 
   function loadJobs() {
     fetch(API_URL + "/advertisements")
@@ -94,6 +95,7 @@ function JobsSection({ token }) {
 
   function handleSubmit(event) {
     event.preventDefault();
+    setError("");
 
     let url = API_URL + "/advertisements";
     let method = "POST";
@@ -106,11 +108,17 @@ function JobsSection({ token }) {
       method: method,
       headers: authHeaders(token),
       body: JSON.stringify(form),
-    }).then(() => {
-      setForm(emptyJob);
-      setEditingId(null);
-      loadJobs();
-    });
+    })
+      .then((res) => {
+        if (!res.ok) {
+          setError("Could not save this job. Please check the fields.");
+          return;
+        }
+        setForm(emptyJob);
+        setEditingId(null);
+        loadJobs();
+      })
+      .catch(() => setError("Server not available."));
   }
 
   function handleEdit(job) {
@@ -126,11 +134,13 @@ function JobsSection({ token }) {
       remote: job.remote,
     });
     setEditingId(job.id);
+    setError("");
   }
 
   function handleCancel() {
     setForm(emptyJob);
     setEditingId(null);
+    setError("");
   }
 
   function handleDelete(id) {
@@ -140,7 +150,15 @@ function JobsSection({ token }) {
     fetch(API_URL + "/advertisements/" + id, {
       method: "DELETE",
       headers: authHeaders(token),
-    }).then(() => loadJobs());
+    })
+      .then((res) => {
+        if (!res.ok) {
+          setError("Could not delete this job.");
+          return;
+        }
+        loadJobs();
+      })
+      .catch(() => setError("Server not available."));
   }
 
   const visibleJobs = jobs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -149,117 +167,123 @@ function JobsSection({ token }) {
     <div className="admin-section">
       <h2 className="admin-section-title">Jobs</h2>
 
-      <form className="form-card admin-form" onSubmit={handleSubmit}>
-        <h2>{editingId ? "Edit job" : "Add a job"}</h2>
+      <div className="admin-layout">
+        <form className="form-card admin-form" onSubmit={handleSubmit}>
+          <h2>{editingId ? "Edit job" : "Add a job"}</h2>
 
-        <label>
-          Title
-          <input name="title" value={form.title} onChange={handleChange} required />
-        </label>
+          <label>
+            Title
+            <input name="title" value={form.title} onChange={handleChange} required />
+          </label>
 
-        <label>
-          Short description
-          <input name="short_description" value={form.short_description} onChange={handleChange} required />
-        </label>
+          <label>
+            Short description
+            <input name="short_description" value={form.short_description} onChange={handleChange} required />
+          </label>
 
-        <label>
-          Full description
-          <textarea name="full_description" value={form.full_description} onChange={handleChange} />
-        </label>
+          <label>
+            Full description
+            <textarea name="full_description" value={form.full_description} onChange={handleChange} />
+          </label>
 
-        <label>
-          Company
-          <select name="company_id" value={form.company_id} onChange={handleChange} required>
-            <option value="">Choose a company</option>
-            {companies.map((company) => (
-              <option key={company.id} value={company.id}>
-                {company.name}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label>
+            Company
+            <select name="company_id" value={form.company_id} onChange={handleChange} required>
+              <option value="">Choose a company</option>
+              {companies.map((company) => (
+                <option key={company.id} value={company.id}>
+                  {company.name}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label>
-          Location
-          <input name="location" value={form.location} onChange={handleChange} />
-        </label>
+          <label>
+            Location
+            <input name="location" value={form.location} onChange={handleChange} />
+          </label>
 
-        <label>
-          Contract type
-          <input name="contract_type" value={form.contract_type} onChange={handleChange} placeholder="Full-time, Internship..." />
-        </label>
+          <label>
+            Contract type
+            <input name="contract_type" value={form.contract_type} onChange={handleChange} placeholder="Full-time, Internship..." />
+          </label>
 
-        <label>
-          Working time
-          <input name="working_time" value={form.working_time} onChange={handleChange} />
-        </label>
+          <label>
+            Working time
+            <input name="working_time" value={form.working_time} onChange={handleChange} />
+          </label>
 
-        <label>
-          Salary
-          <input name="salary" value={form.salary} onChange={handleChange} />
-        </label>
+          <label>
+            Salary
+            <input name="salary" value={form.salary} onChange={handleChange} />
+          </label>
 
-        <label>
-          Remote
-          <select name="remote" value={form.remote} onChange={handleChange}>
-            <option value="no">On site</option>
-            <option value="partial">Hybrid</option>
-            <option value="full">Remote</option>
-          </select>
-        </label>
+          <label>
+            Remote
+            <select name="remote" value={form.remote} onChange={handleChange}>
+              <option value="no">On site</option>
+              <option value="partial">Hybrid</option>
+              <option value="full">Remote</option>
+            </select>
+          </label>
 
-        <button type="submit" className="btn-primary">
-          {editingId ? "SAVE CHANGES" : "ADD JOB"}
-        </button>
+          {error && <p className="form-error">{error}</p>}
 
-        {editingId && (
-          <button type="button" className="btn-outline" onClick={handleCancel}>
-            CANCEL
+          <button type="submit" className="btn-primary">
+            {editingId ? "SAVE CHANGES" : "ADD JOB"}
           </button>
-        )}
-      </form>
 
-      <table className="admin-table">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Company</th>
-            <th>Location</th>
-            <th>Contract</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {visibleJobs.map((job) => (
-            <Fragment key={job.id}>
+          {editingId && (
+            <button type="button" className="btn-outline" onClick={handleCancel}>
+              CANCEL
+            </button>
+          )}
+        </form>
+
+        <div className="admin-list">
+          <table className="admin-table">
+            <thead>
               <tr>
-                <td>
-                  <span className="title-with-toggle">
-                    <Details open={openId === job.id} onClick={() => toggle(job.id)} />
-                    {job.title}
-                  </span>
-                </td>
-                <td>{job.company_name}</td>
-                <td>{job.location}</td>
-                <td>{job.contract_type}</td>
-                <td className="admin-actions">
-                  <button className="btn-outline" onClick={() => handleEdit(job)}>EDIT</button>
-                  <button className="btn-primary" onClick={() => handleDelete(job.id)}>DELETE</button>
-                </td>
+                <th>Title</th>
+                <th>Company</th>
+                <th>Location</th>
+                <th>Contract</th>
+                <th>Actions</th>
               </tr>
+            </thead>
+            <tbody>
+              {visibleJobs.map((job) => (
+                <Fragment key={job.id}>
+                  <tr>
+                    <td>
+                      <span className="title-with-toggle">
+                        <Details open={openId === job.id} onClick={() => toggle(job.id)} />
+                        {job.title}
+                      </span>
+                    </td>
+                    <td>{job.company_name}</td>
+                    <td>{job.location}</td>
+                    <td>{job.contract_type}</td>
+                    <td className="admin-actions">
+                      <button className="btn-outline" onClick={() => handleEdit(job)}>EDIT</button>
+                      <button className="btn-primary" onClick={() => handleDelete(job.id)}>DELETE</button>
+                    </td>
+                  </tr>
 
-              {openId === job.id && (
-                <tr className="details-row">
-                  <td colSpan="5">
-                    <JobDetails jobId={job.id} />
-                  </td>
-                </tr>
-              )}
-            </Fragment>
-          ))}
-        </tbody>
-      </table>
-      <Pagination page={page} total={jobs.length} onChange={setPage} />
+                  {openId === job.id && (
+                    <tr className="details-row">
+                      <td colSpan="5">
+                        <JobDetails jobId={job.id} />
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              ))}
+            </tbody>
+          </table>
+          <Pagination page={page} total={jobs.length} onChange={setPage} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -269,6 +293,7 @@ function CompaniesSection({ token }) {
   const [form, setForm] = useState(emptyCompany);
   const [editingId, setEditingId] = useState(null);
   const [page, setPage] = useState(1);
+  const [error, setError] = useState("");
 
   function loadCompanies() {
     fetch(API_URL + "/companies")
@@ -286,6 +311,7 @@ function CompaniesSection({ token }) {
 
   function handleSubmit(event) {
     event.preventDefault();
+    setError("");
 
     let url = API_URL + "/companies";
     let method = "POST";
@@ -298,11 +324,17 @@ function CompaniesSection({ token }) {
       method: method,
       headers: authHeaders(token),
       body: JSON.stringify(form),
-    }).then(() => {
-      setForm(emptyCompany);
-      setEditingId(null);
-      loadCompanies();
-    });
+    })
+      .then((res) => {
+        if (!res.ok) {
+          setError("Could not save this company. Please check the fields.");
+          return;
+        }
+        setForm(emptyCompany);
+        setEditingId(null);
+        loadCompanies();
+      })
+      .catch(() => setError("Server not available."));
   }
 
   function handleEdit(company) {
@@ -314,11 +346,13 @@ function CompaniesSection({ token }) {
       description: company.description || "",
     });
     setEditingId(company.id);
+    setError("");
   }
 
   function handleCancel() {
     setForm(emptyCompany);
     setEditingId(null);
+    setError("");
   }
 
   function handleDelete(id) {
@@ -328,7 +362,15 @@ function CompaniesSection({ token }) {
     fetch(API_URL + "/companies/" + id, {
       method: "DELETE",
       headers: authHeaders(token),
-    }).then(() => loadCompanies());
+    })
+      .then((res) => {
+        if (!res.ok) {
+          setError("Could not delete this company.");
+          return;
+        }
+        loadCompanies();
+      })
+      .catch(() => setError("Server not available."));
   }
 
   const visibleCompanies = companies.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -337,69 +379,75 @@ function CompaniesSection({ token }) {
     <div className="admin-section">
       <h2 className="admin-section-title">Companies</h2>
 
-      <form className="form-card admin-form" onSubmit={handleSubmit}>
-        <h2>{editingId ? "Edit company" : "Add a company"}</h2>
+      <div className="admin-layout">
+        <form className="form-card admin-form" onSubmit={handleSubmit}>
+          <h2>{editingId ? "Edit company" : "Add a company"}</h2>
 
-        <label>
-          Name
-          <input name="name" value={form.name} onChange={handleChange} required />
-        </label>
+          <label>
+            Name
+            <input name="name" value={form.name} onChange={handleChange} required />
+          </label>
 
-        <label>
-          Sector
-          <input name="sector" value={form.sector} onChange={handleChange} />
-        </label>
+          <label>
+            Sector
+            <input name="sector" value={form.sector} onChange={handleChange} />
+          </label>
 
-        <label>
-          City
-          <input name="city" value={form.city} onChange={handleChange} />
-        </label>
+          <label>
+            City
+            <input name="city" value={form.city} onChange={handleChange} />
+          </label>
 
-        <label>
-          Website
-          <input name="website" value={form.website} onChange={handleChange} />
-        </label>
+          <label>
+            Website
+            <input name="website" value={form.website} onChange={handleChange} />
+          </label>
 
-        <label>
-          Description
-          <textarea name="description" value={form.description} onChange={handleChange} />
-        </label>
+          <label>
+            Description
+            <textarea name="description" value={form.description} onChange={handleChange} />
+          </label>
 
-        <button type="submit" className="btn-primary">
-          {editingId ? "SAVE CHANGES" : "ADD COMPANY"}
-        </button>
+          {error && <p className="form-error">{error}</p>}
 
-        {editingId && (
-          <button type="button" className="btn-outline" onClick={handleCancel}>
-            CANCEL
+          <button type="submit" className="btn-primary">
+            {editingId ? "SAVE CHANGES" : "ADD COMPANY"}
           </button>
-        )}
-      </form>
 
-      <table className="admin-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Sector</th>
-            <th>City</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {visibleCompanies.map((company) => (
-            <tr key={company.id}>
-              <td>{company.name}</td>
-              <td>{company.sector}</td>
-              <td>{company.city}</td>
-              <td className="admin-actions">
-                <button className="btn-outline" onClick={() => handleEdit(company)}>EDIT</button>
-                <button className="btn-primary" onClick={() => handleDelete(company.id)}>DELETE</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <Pagination page={page} total={companies.length} onChange={setPage} />
+          {editingId && (
+            <button type="button" className="btn-outline" onClick={handleCancel}>
+              CANCEL
+            </button>
+          )}
+        </form>
+
+        <div className="admin-list">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Sector</th>
+                <th>City</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visibleCompanies.map((company) => (
+                <tr key={company.id}>
+                  <td>{company.name}</td>
+                  <td>{company.sector}</td>
+                  <td>{company.city}</td>
+                  <td className="admin-actions">
+                    <button className="btn-outline" onClick={() => handleEdit(company)}>EDIT</button>
+                    <button className="btn-primary" onClick={() => handleDelete(company.id)}>DELETE</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <Pagination page={page} total={companies.length} onChange={setPage} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -442,7 +490,7 @@ function ApplicationsSection({ token }) {
       {applications.length === 0 && <p className="admin-empty">No applications yet.</p>}
 
       {applications.length > 0 && (
-        <>
+        <div className="admin-list admin-list-full">
           <table className="admin-table">
             <thead>
               <tr>
@@ -485,7 +533,7 @@ function ApplicationsSection({ token }) {
             </tbody>
           </table>
           <Pagination page={page} total={applications.length} onChange={setPage} />
-        </>
+        </div>
       )}
     </div>
   );
@@ -538,14 +586,16 @@ function PeopleSection({ token }) {
       method: method,
       headers: authHeaders(token),
       body: JSON.stringify(person),
-    }).then((res) => {
-      if (!res.ok) {
-        setError("Could not save. This email may already be used.");
-        return;
-      }
-      resetForm();
-      loadPeople();
-    });
+    })
+      .then((res) => {
+        if (!res.ok) {
+          setError("Could not save. This email may already be used.");
+          return;
+        }
+        resetForm();
+        loadPeople();
+      })
+      .catch(() => setError("Server not available."));
   }
 
   function handleEdit(person) {
@@ -578,96 +628,100 @@ function PeopleSection({ token }) {
     <div className="admin-section">
       <h2 className="admin-section-title">People</h2>
 
-      <form className="form-card admin-form" onSubmit={handleSubmit}>
-        <h2>{editingId ? "Edit person" : "Add a person"}</h2>
+      <div className="admin-layout">
+        <form className="form-card admin-form" onSubmit={handleSubmit}>
+          <h2>{editingId ? "Edit person" : "Add a person"}</h2>
 
-        <label>
-          First name
-          <input name="first_name" value={form.first_name} onChange={handleChange} required />
-        </label>
-
-        <label>
-          Last name
-          <input name="last_name" value={form.last_name} onChange={handleChange} required />
-        </label>
-
-        <label>
-          Email
-          <input type="email" name="email" value={form.email} onChange={handleChange} required />
-        </label>
-
-        <label>
-          Phone
-          <input name="phone" value={form.phone} onChange={handleChange} />
-        </label>
-
-        {!editingId && (
           <label>
-            Password
-            <input type="password" name="password" value={form.password} onChange={handleChange} required />
+            First name
+            <input name="first_name" value={form.first_name} onChange={handleChange} required />
           </label>
-        )}
 
-        <label>
-          Role
-          <select name="role" value={form.role} onChange={handleChange}>
-            <option value="user">User</option>
-            <option value="employer">Employer</option>
-            {editingId && <option value="admin">Admin</option>}
-          </select>
-        </label>
+          <label>
+            Last name
+            <input name="last_name" value={form.last_name} onChange={handleChange} required />
+          </label>
 
-        <label>
-          Company
-          <select name="company_id" value={form.company_id} onChange={handleChange}>
-            <option value="">None</option>
-            {companies.map((company) => (
-              <option key={company.id} value={company.id}>
-                {company.name}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label>
+            Email
+            <input type="email" name="email" value={form.email} onChange={handleChange} required />
+          </label>
 
-        {error && <p className="form-error">{error}</p>}
+          <label>
+            Phone
+            <input name="phone" value={form.phone} onChange={handleChange} />
+          </label>
 
-        <button type="submit" className="btn-primary">
-          {editingId ? "SAVE CHANGES" : "ADD PERSON"}
-        </button>
+          {!editingId && (
+            <label>
+              Password
+              <input type="password" name="password" value={form.password} onChange={handleChange} required />
+            </label>
+          )}
 
-        {editingId && (
-          <button type="button" className="btn-outline" onClick={resetForm}>
-            CANCEL
+          <label>
+            Role
+            <select name="role" value={form.role} onChange={handleChange}>
+              <option value="user">User</option>
+              <option value="employer">Employer</option>
+              {editingId && <option value="admin">Admin</option>}
+            </select>
+          </label>
+
+          <label>
+            Company
+            <select name="company_id" value={form.company_id} onChange={handleChange}>
+              <option value="">None</option>
+              {companies.map((company) => (
+                <option key={company.id} value={company.id}>
+                  {company.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {error && <p className="form-error">{error}</p>}
+
+          <button type="submit" className="btn-primary">
+            {editingId ? "SAVE CHANGES" : "ADD PERSON"}
           </button>
-        )}
-      </form>
 
-      <table className="admin-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Company</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {visiblePeople.map((person) => (
-            <tr key={person.id}>
-              <td>{person.first_name} {person.last_name}</td>
-              <td>{person.email}</td>
-              <td>{person.role}</td>
-              <td>{person.company_name}</td>
-              <td className="admin-actions">
-                <button className="btn-outline" onClick={() => handleEdit(person)}>EDIT</button>
-                <button className="btn-primary" onClick={() => handleDelete(person.id)}>DELETE</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <Pagination page={page} total={people.length} onChange={setPage} />
+          {editingId && (
+            <button type="button" className="btn-outline" onClick={resetForm}>
+              CANCEL
+            </button>
+          )}
+        </form>
+
+        <div className="admin-list">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Company</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visiblePeople.map((person) => (
+                <tr key={person.id}>
+                  <td>{person.first_name} {person.last_name}</td>
+                  <td>{person.email}</td>
+                  <td>{person.role}</td>
+                  <td>{person.company_name}</td>
+                  <td className="admin-actions">
+                    <button className="btn-outline" onClick={() => handleEdit(person)}>EDIT</button>
+                    <button className="btn-primary" onClick={() => handleDelete(person.id)}>DELETE</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <Pagination page={page} total={people.length} onChange={setPage} />
+        </div>
+      </div>
     </div>
   );
 }

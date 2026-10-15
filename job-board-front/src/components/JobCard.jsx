@@ -15,6 +15,8 @@ function JobCard({ job, user, isFavourite, onToggleFavourite, hasApplied, onAppl
   const [showDetails, setShowDetails] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
+  const canApply = !user || user.role === "user";
+
   return (
     <article className={showDetails ? "job-card open" : "job-card"}>
       <div className="job-card-top">
@@ -61,11 +63,13 @@ function JobCard({ job, user, isFavourite, onToggleFavourite, hasApplied, onAppl
           {showDetails ? "SHOW LESS" : "LEARN MORE"}
         </button>
 
-        {hasApplied ? (
+        {canApply && hasApplied && (
           <button className="btn-primary" disabled>
             APPLIED
           </button>
-        ) : (
+        )}
+
+        {canApply && !hasApplied && (
           <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
             APPLY
           </button>
@@ -74,7 +78,7 @@ function JobCard({ job, user, isFavourite, onToggleFavourite, hasApplied, onAppl
 
       {showDetails && <JobDetails jobId={job.id} />}
 
-      {showForm && <ApplyForm jobId={job.id} user={user} onApplied={onApplied} />}
+      {canApply && showForm && <ApplyForm jobId={job.id} user={user} onApplied={onApplied} />}
     </article>
   );
 }
