@@ -36,12 +36,15 @@ CORS(app)
 # 3. DATABASE CONNECTION ==================================
 def get_db():
     """Open a connection to MySQL."""
+    ssl_ca = os.getenv("DB_SSL_CA")  # path to the CA certificate, only needed online
     return pymysql.connect(
         host=os.getenv("DB_HOST"),
+        port=int(os.getenv("DB_PORT", 3306)),
         user=os.getenv("DB_USER"),
         password=os.getenv("DB_PASSWORD"),
         database=os.getenv("DB_NAME"),
         cursorclass=pymysql.cursors.DictCursor,
+        ssl={"ca": ssl_ca} if ssl_ca else None,
     )
 
 # 4. AUTH HELPERS ==========================================
