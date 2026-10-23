@@ -80,7 +80,7 @@ Le site est sur `http://localhost:5173`.
 
 | Rôle | Email | Mot de passe |
 |---|---|---|
-| Admin | admin@chefs.dev | admin123 |
+| Admin | *hidden* |
 | Candidat | jane@chefs.dev | jane123 |
 | Recruteur | employer@chefs.dev | employer123 |
 
